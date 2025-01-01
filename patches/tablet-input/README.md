@@ -8,11 +8,11 @@ In versions less than or equal to 0.18.1 (against which, dwl 0.7 is typically bu
 In the master branch and (anticipated) in versions later than 0.18.1, the order is `surface, tablet`.  
 The git branch for this patch uses the `surface, tablet` order.
 
-If you are attempting to use this codebase to make your own modifications to the patch, there is only one call to the `wlr_surface_accepts_tablet_v2` function, but you will need to make the argument order change.
+If you are attempting to use this codebase to make your own modifications to the patch, there is only one call to the `wlr_surface_accepts_tablet_v2` function, but you will need to make the argument order change if you expect to build against wlroots 0.18.1 or earlier.
 
 The `0.7` patch linked here accounts for the change and uses the `tablet, surface` order, but the patch is orphaned from a codebase.
 
-There was discussion of this matter in issue #141.
+There was discussion of this matter in [Issue #141](https://codeberg.org/dwl/dwl-patches/issues/141).
 
 ### Download
 - [git branch](https://codeberg.org/fauxmight/dwl/src/branch/tablet-input)
