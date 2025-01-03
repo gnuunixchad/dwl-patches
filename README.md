@@ -1,38 +1,29 @@
 # dwl-patches
-* A general [dwl wiki](https://codeberg.org/dwl/dwl/wiki) is available at the main [dwl] page.
+* A general [dwl wiki](https://codeberg.org/dwl/dwl/wiki) is available at the main [dwl] repository.
 * This repository is exclusively for dwl PATCHES.
 
-## _STALE_PATCHES
-Many patches previously in regular use do not cleanly apply to the current code base. Following the migration to Codeberg, these stale patch descriptions were relocated to [_STALE_PATCHES].
+*Note: All patches are user-submitted content. The authors of dwl do not continually monitor them. You are responsible for downloading and reviewing a patch before using it!*
 
-Additionally, patches that have been deprecated by their author(s)/maintainer(s) may be found in [_STALE_PATCHES].
+## Reporting Issues
+- Issues with existing patches can be generated here in the dwl-patches [issues]. Please be sure to "@" reference the patch author in your issue.
 
-If you are an original author of one of these or you have the inclination to revive one of these, please follow the same procedures outlined below for contributing new patches.
-
-In your initial pull request (or in the commit that revives the stale patch if you already have write access), remove the `.md` file or the patch directory from [_STALE_PATCHES] for the patch which you have revived.
-
-## Patching
+## Contributing Patches to `dwl-patches`
 Since dwl follows [suckless](https://suckless.org/) philosophy, it doesn't provide every feature under the sun. To broaden dwl's functionality, one needs to get familiar with the concept of patching. To get your feet wet, consult [the hacking page](https://suckless.org/hacking/) of the suckless website.
 
 Patches should normally target the latest dwl [release].  
 If you target an older release, specify that in the `Download` link on your `README.md` page.  
 If you target the unstable `main` branch, specify that in the `Download` link on your `README.md` page.
 
-*Note: These external patches are user-submitted content, and the authors of dwl cannot monitor them. Please download and review a patch before using it!*
-
-## Reporting Issues
-- Issues with existing patches can be generated here in the dwl-patches [issues]. Please be sure to "@" reference the patch author in your issue.
-
-## Contributing Patches to `dwl-patches`
+0. Starting from a local clone of [dwl] (not dwl-patches)
 1. If you do not have it already, add the remote for the main dwl repository in your local copy and fetch it:
     `git remote add --fetch upstream https://codeberg.org/dwl/dwl`
-2. In your local repository of dwl, create a .patch file
+2. Use git to create a branch for your new patch and hack away creating your patched version of [dwl].
+3. In your local clone of dwl, create a .patch file
     `git format-patch upstream/main...<branch-name> --stdout > PATCHNAME.patch`
-3. Fork [https://codeberg.org/dwl/dwl-patches][dwl-patches]
-4. Configure your repository
+4. Now fork [dwl-patches] (not dwl) in Codeberg and clone it locally
+5. Configure your `dwl-patches` local clone
     `git config --local pull.rebase true`
-5. In your local copy, add a directory called `patches/PATCHNAME`. Place the `PATCHNAME.patch` you created in step three into the `patches/PATCHNAME` directory.
-6. Use the Codeberg web interface to send a pull request to [dwl-patches] (NOT to [dwl]) (Codeberg nicely will generate a URL for you)
+6. In your local `dwl-patches` clone, add a directory called `patches/PATCHNAME`. Place the `PATCHNAME.patch` you created in step (2) into the `patches/PATCHNAME` directory.
 7. Add a `README.md` page to the `PATCHNAME` directory using this template (add/remove sections as you like):
     ```markdown
     ### Description
@@ -54,12 +45,13 @@ If you target the unstable `main` branch, specify that in the `Download` link on
     ```
     You may choose to include screenshots (hosted in your patch's subdirectory) in your `README.md`. The process is described [here](https://docs.codeberg.org/markdown/using-images/).
 
-8. WHEN YOUR PULL REQUEST IS APPROVED, your Codeberg account will also be granted commit access to [dwl-patches]. Once you have write access, you can make direct modifications/upates to your patches instead of pull requests.
+8. Use the Codeberg web interface to send a pull request to [dwl-patches] (NOT to [dwl])
+9. WHEN YOUR PULL REQUEST IS APPROVED, your Codeberg account will also be granted commit access to [dwl-patches]. Once you have write access, you can make direct modifications/upates to your patches instead of pull requests.
 
-## Updating/Modifying Existing Patches
-- If the existing patch is already being maintained by another author, do not make modifications to it without permission.
-- Create an issue at [issues] @mentioning the current maintainer
-- If you receive no reply for seven days, you may adopt the patch.
+## Updating/Modifying/Adopting Existing Patches
+- If the existing patch is already being maintained by another author, do not make modifications to it.
+- Create an issue at [issues] @mentioning the current maintainer.
+- If you receive no reply for seven days, you may assume the patch abandoned and you may adopt the patch.
 - Modify the `README.md` with new links for your raw patch and for your git branch.
     - **LEAVE PREVIOUS AUTHOR(S)' NICKS/LINKS INTACT UNDER THE "Authors" HEADING!**
     - Add your own nick/link to the top of the "Authors" list.
@@ -73,6 +65,13 @@ If you target the unstable `main` branch, specify that in the `Download` link on
     - May explain in the associated `README.md` any relevant details of the decision to deprecate the patch.
 - This process allows current or future users of the patch the option to adopt, modify, or integrate stale/historical code or portions thereof.
 
+## _STALE_PATCHES
+Deprecated or unmaintained patches are held in the _STALE_PATCHES directory.  
+Currently, this directory also contains `.md` description files from ancient patches predating the move to Codeberg.
+
+If you have the inclination to revive one of these, please follow the same procedures outlined below for contributing new patches.
+
+In your initial pull request (or in the commit that revives the stale patch if you already have write access), remove the corresponding `.md` file or the patch directory from [_STALE_PATCHES].
 
 [_STALE_PATCHES]:https://codeberg.org/dwl/dwl-patches/src/branch/main/_STALE_PATCHES
 [dwl]: https://codeberg.org/dwl/dwl
