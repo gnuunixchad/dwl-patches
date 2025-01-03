@@ -15,9 +15,11 @@ static const struct wlr_render_color shadow_color = COLOR(0x0000FFff);
 static const struct wlr_render_color shadow_color_focus = COLOR(0xFF0000ff);
 static const int shadow_blur_sigma = 20;
 static const int shadow_blur_sigma_focus = 40;
+static const char *const shadow_ignore_list[] = { NULL }; /* list of app-id to ignore */
 
 static const int corner_radius = 0; /* 0 disables corner_radius */
 static const int corner_radius_inner = 3; /* 0 disables corner_radius */
+static const int corner_radius_only_floating = 0; /* only apply corner_radius and corner_radius_inner to floating windows */
 
 static const int blur = 1; /* flag to enable blur */
 static const int blur_optimized = 1;
@@ -49,7 +51,7 @@ static const struct blur_data blur_data = {
 
 - [git branch](https://codeberg.org/wochap/dwl/src/branch/v0.8-a/scenefx)
 
-- [0.8](https://codeberg.org/dwl/dwl-patches/raw/commit/494baec5b107114b74d243440aa8581fe6c03e48/patches/scenefx/scenefx.patch)
+- [0.8](https://codeberg.org/dwl/dwl-patches/raw/commit/72c5d436abef385456877f210f1d1876c88d68e3/patches/scenefx/scenefx.patch)
 
   **NOTE:** This patch was tested with the `b2e0ac4beb85aa89d0357dc8fcf8762808650890` commit on the `main` branch of `SceneFX`. It supports rounded borders, blur, and shadows.
 
