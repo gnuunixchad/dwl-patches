@@ -61,19 +61,19 @@ If you target the unstable `main` branch, specify that in the `Download` link on
 - Please do not open issues or contact maintainers to request deprecation of a patch.
 - Deprecation of a patch will only occur if *all* authors or current maintainers of the patch agree to the decision to deprecate.
 - In such a circumstance the author(s)/maintainer(s):
-    - Will create a commit moving the patch to the `_STALE_PATCHES` directory
+    - Will create a commit moving the patch to the `stale-patches` directory
     - May explain in the associated `README.md` any relevant details of the decision to deprecate the patch.
 - This process allows current or future users of the patch the option to adopt, modify, or integrate stale/historical code or portions thereof.
 
-## _STALE_PATCHES
-Deprecated or unmaintained patches are held in the _STALE_PATCHES directory.  
+## stale-patches
+Deprecated or unmaintained patches are held in the stale-patches directory.  
 Currently, this directory also contains `.md` description files from ancient patches predating the move to Codeberg.
 
 If you have the inclination to revive one of these, please follow the same procedures outlined below for contributing new patches.
 
-In your initial pull request (or in the commit that revives the stale patch if you already have write access), remove the corresponding `.md` file or the patch directory from [_STALE_PATCHES].
+In your initial pull request (or in the commit that revives the stale patch if you already have write access), remove the corresponding `.md` file or the patch directory from [stale-patches].
 
-[_STALE_PATCHES]:https://codeberg.org/dwl/dwl-patches/src/branch/main/_STALE_PATCHES
+[stale-patches]:https://codeberg.org/dwl/dwl-patches/src/branch/main/stale-patches
 [dwl]: https://codeberg.org/dwl/dwl
 [dwl-patches]: https://codeberg.org/dwl/dwl-patches
 [issues]: https://codeberg.org/dwl/dwl-patches/issues
