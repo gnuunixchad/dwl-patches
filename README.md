@@ -66,14 +66,14 @@ If you target the unstable `main` branch, specify that in the `Download` link on
 - This process allows current or future users of the patch the option to adopt, modify, or integrate stale/historical code or portions thereof.
 
 ## stale-patches
-Deprecated or unmaintained patches are held in the stale-patches directory.  
+Deprecated or unmaintained patches are held in the [stale-patches] directory.  
 Currently, this directory also contains `.md` description files from ancient patches predating the move to Codeberg.
 
 If you have the inclination to revive one of these, please follow the same procedures outlined below for contributing new patches.
 
 In your initial pull request (or in the commit that revives the stale patch if you already have write access), remove the corresponding `.md` file or the patch directory from [stale-patches].
 
-[stale-patches]:https://codeberg.org/dwl/dwl-patches/src/branch/main/stale-patches
+[stale-patches]: https://codeberg.org/dwl/dwl-patches/src/branch/main/stale-patches
 [dwl]: https://codeberg.org/dwl/dwl
 [dwl-patches]: https://codeberg.org/dwl/dwl-patches
 [issues]: https://codeberg.org/dwl/dwl-patches/issues
