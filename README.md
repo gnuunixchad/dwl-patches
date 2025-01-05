@@ -48,6 +48,10 @@ If you target the unstable `main` branch, specify that in the `Download` link on
 8. Use the Codeberg web interface to send a pull request to [dwl-patches] (NOT to [dwl])
 9. WHEN YOUR PULL REQUEST IS APPROVED, your Codeberg account will also be granted commit access to [dwl-patches]. Once you have write access, you can make direct modifications/upates to your patches instead of pull requests.
 
+Individuals who have made known that they no longer intend to maintain their patches will have commit access to the [dwl-pathces] repository removed.
+
+A returning user who formerly had commit access is welcome to open an issue on [dwl-patches] requesting commit access be reinstated. When doing so, please link to the original issue opened that granted commit access.
+
 ## Updating/Modifying/Adopting Existing Patches
 - If the existing patch is already being maintained by another author, do not make modifications to it.
 - Create an issue at [issues] @mentioning the current maintainer.
@@ -79,3 +83,5 @@ In your initial pull request (or in the commit that revives the stale patch if y
 [issues]: https://codeberg.org/dwl/dwl-patches/issues
 [release]: https://codeberg.org/dwl/dwl/releases
 [Codeberg]: https://codeberg.org
+
+## 
