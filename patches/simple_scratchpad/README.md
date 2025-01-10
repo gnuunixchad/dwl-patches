@@ -3,7 +3,7 @@
 # simple_scratchpad — A very simple scratchpad utility.
 
 Adds functions to add, toggle and remove clients to/from scratchpad client list.
-![scratchpad in action](./demos/simple_scratchpad_demo.gif)
+![scratchpad in action](https://github.com/julmajustus/dwl-patches/blob/main/demos/simple_scratchpad_demo.gif?raw=true)
   
 ---
 

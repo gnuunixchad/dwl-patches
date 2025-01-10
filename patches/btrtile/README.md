@@ -4,7 +4,7 @@
 
 It provides a focus-driven, mouse- and keyboard-friendly tiling layout that grants you granular control over how clients are placed and resized.
 
-![btrtile in action](./demos/btrtiledemo.gif)
+![btrtile in action](https://github.com/julmajustus/dwl-patches/blob/main/demos/btrtiledemo.gif?raw=true)
 
 ---
 
