@@ -166,7 +166,7 @@ index 0eba3e9..c9eb7fb 100644
 +		motionnotify(motion_event->time_msec, &motion_event->pointer->base, dx, dy, dx, dy);
 +
 +		button_event->button = BTN_LEFT;
-+		button_event->state = WLR_BUTTON_PRESSED;
++		button_event->state = WL_POINTER_BUTTON_STATE_PRESSED;
 +		buttonpress(listener, button_event);
 +	}
 +}
@@ -184,7 +184,7 @@ index 0eba3e9..c9eb7fb 100644
 +		struct wlr_pointer_button_event *button_event = data;
 +
 +		button_event->button = BTN_LEFT;
-+		button_event->state = WLR_BUTTON_RELEASED;
++		button_event->state = WL_POINTER_BUTTON_STATE_RELEASED;
 +		buttonpress(listener, button_event);
 +	}
 +
