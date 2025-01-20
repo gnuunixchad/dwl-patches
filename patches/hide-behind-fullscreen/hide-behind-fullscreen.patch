@@ -1,4 +1,4 @@
-From a102d5220bbfcd74e345011ca0ccf908a9f6668b Mon Sep 17 00:00:00 2001
+From ac1537f068ea626f1984803ed8db08faf7943b18 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Leonardo=20Hern=C3=A1ndez=20Hern=C3=A1ndez?=
  <leohdz172@proton.me>
 Date: Sun, 10 Apr 2022 22:38:53 -0500
@@ -27,10 +27,10 @@ index 22d2171d..1d5a4c84 100644
  /* tagging - TAGCOUNT must be no greater than 31 */
  #define TAGCOUNT (9)
 diff --git a/dwl.c b/dwl.c
-index 9021e442..111be796 100644
+index ad21e1ba..f5395fe6 100644
 --- a/dwl.c
 +++ b/dwl.c
-@@ -480,7 +480,9 @@ applyrules(Client *c)
+@@ -505,7 +505,9 @@ applyrules(Client *c)
  void
  arrange(Monitor *m)
  {
@@ -41,7 +41,7 @@ index 9021e442..111be796 100644
  
  	if (!m->wlr_output->enabled)
  		return;
-@@ -511,6 +513,26 @@ arrange(Monitor *m)
+@@ -536,6 +538,26 @@ arrange(Monitor *m)
  								: c->scene->node.parent);
  	}
  
@@ -69,5 +69,5 @@ index 9021e442..111be796 100644
  		m->lt[m->sellt]->arrange(m);
  	motionnotify(0, NULL, 0, 0, 0, 0);
 -- 
-2.46.0
+2.48.0
 
