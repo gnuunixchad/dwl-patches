@@ -1,4 +1,4 @@
-From ab8abc0186ad74e24bdf9e4f3af00d03ac269631 Mon Sep 17 00:00:00 2001
+From 6d5017888891957615160fe7c015adf7a6f0fd45 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Leonardo=20Hern=C3=A1ndez=20Hern=C3=A1ndez?=
  <leohdz172@proton.me>
 Date: Wed, 5 Oct 2022 23:07:13 -0500
@@ -13,7 +13,7 @@ Signed-off-by: Leonardo Hernández Hernández <leohdz172@proton.me>
  1 file changed, 9 insertions(+)
 
 diff --git a/dwl.c b/dwl.c
-index 9021e442..3af09d54 100644
+index ad21e1ba..940fbeff 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -8,6 +8,7 @@
@@ -24,7 +24,7 @@ index 9021e442..3af09d54 100644
  #include <sys/wait.h>
  #include <time.h>
  #include <unistd.h>
-@@ -357,6 +358,8 @@ static void xytonode(double x, double y, struct wlr_surface **psurface,
+@@ -353,6 +354,8 @@ static void xytonode(double x, double y, struct wlr_surface **psurface,
  static void zoom(const Arg *arg);
  
  /* variables */
@@ -33,7 +33,7 @@ index 9021e442..3af09d54 100644
  static pid_t child_pid = -1;
  static int locked;
  static void *exclusive_focus;
-@@ -2201,6 +2204,7 @@ run(char *startup_cmd)
+@@ -2248,6 +2251,7 @@ run(char *startup_cmd)
  		if ((child_pid = fork()) < 0)
  			die("startup: fork:");
  		if (child_pid == 0) {
@@ -41,7 +41,7 @@ index 9021e442..3af09d54 100644
  			setsid();
  			dup2(piperw[0], STDIN_FILENO);
  			close(piperw[0]);
-@@ -2609,6 +2613,7 @@ void
+@@ -2659,6 +2663,7 @@ void
  spawn(const Arg *arg)
  {
  	if (fork() == 0) {
@@ -49,7 +49,7 @@ index 9021e442..3af09d54 100644
  		dup2(STDERR_FILENO, STDOUT_FILENO);
  		setsid();
  		execvp(((char **)arg->v)[0], (char **)arg->v);
-@@ -3156,6 +3161,10 @@ main(int argc, char *argv[])
+@@ -3178,6 +3183,10 @@ main(int argc, char *argv[])
  	char *startup_cmd = NULL;
  	int c;
  
@@ -61,5 +61,5 @@ index 9021e442..3af09d54 100644
  		if (c == 's')
  			startup_cmd = optarg;
 -- 
-2.46.0
+2.48.0
 
