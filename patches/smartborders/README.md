@@ -4,7 +4,7 @@ in its tag OR if the window is in a monocle layout.
 
 ### Download
 - [git branch](https://codeberg.org/sevz/dwl/src/branch/smartborders)
-- [main 2024-09-02](/dwl/dwl-patches/raw/branch/main/patches/smartborders/smartborders.patch)
+- [main 2025-01-20](/dwl/dwl-patches/raw/branch/main/patches/smartborders/smartborders.patch)
 - [smartborders-0.7.patch](/dwl/dwl-patches/raw/branch/main/patches/smartborders/smartborders-0.7.patch)
 
 ### Authors
