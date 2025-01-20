@@ -6,7 +6,7 @@ KNOWN BUGS:
 
 ### Download
 - [git branch](https://codeberg.org/fauxmight/dwl/src/branch/touch-input)
-- [2025-01-01](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/less-simple-touch-input/less-simple-touch-input.patch)
+- [2025-01-01](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/touch-input/touch-input.patch)
 
 ### Authors
 - [fauxmight](https://codeberg.org/fauxmight)
