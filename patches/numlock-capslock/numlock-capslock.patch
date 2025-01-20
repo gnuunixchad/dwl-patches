@@ -1,4 +1,4 @@
-From ba9733fa956ec37a3e7a47c8023d6751df948141 Mon Sep 17 00:00:00 2001
+From ec5dbcd9f4629549d3d14b1791305a42479a935f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Leonardo=20Hern=C3=A1ndez=20Hern=C3=A1ndez?=
  <leohdz172@proton.me>
 Date: Sun, 4 Apr 2021 19:56:09 -0500
@@ -29,7 +29,7 @@ index 22d2171d..21dc6201 100644
  static const int repeat_delay = 600;
  
 diff --git a/dwl.c b/dwl.c
-index 9021e442..c1ddee88 100644
+index ad21e1ba..d0059ec8 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -14,6 +14,7 @@
@@ -40,7 +40,7 @@ index 9021e442..c1ddee88 100644
  #include <wlr/render/allocator.h>
  #include <wlr/render/wlr_renderer.h>
  #include <wlr/types/wlr_alpha_modifier_v1.h>
-@@ -359,6 +360,7 @@ static void zoom(const Arg *arg);
+@@ -355,6 +356,7 @@ static void zoom(const Arg *arg);
  /* variables */
  static pid_t child_pid = -1;
  static int locked;
@@ -48,7 +48,7 @@ index 9021e442..c1ddee88 100644
  static void *exclusive_focus;
  static struct wl_display *dpy;
  static struct wl_event_loop *event_loop;
-@@ -873,6 +875,8 @@ createkeyboard(struct wlr_keyboard *keyboard)
+@@ -936,6 +938,8 @@ createkeyboard(struct wlr_keyboard *keyboard)
  	/* Set the keymap to match the group keymap */
  	wlr_keyboard_set_keymap(keyboard, kb_group->wlr_group->keyboard.keymap);
  
@@ -57,7 +57,7 @@ index 9021e442..c1ddee88 100644
  	/* Add the new keyboard to the group */
  	wlr_keyboard_group_add_keyboard(kb_group->wlr_group, keyboard);
  }
-@@ -894,6 +898,21 @@ createkeyboardgroup(void)
+@@ -957,6 +961,21 @@ createkeyboardgroup(void)
  		die("failed to compile keymap");
  
  	wlr_keyboard_set_keymap(&group->wlr_group->keyboard, keymap);
@@ -80,5 +80,5 @@ index 9021e442..c1ddee88 100644
  	xkb_context_unref(context);
  
 -- 
-2.46.0
+2.48.0
 
