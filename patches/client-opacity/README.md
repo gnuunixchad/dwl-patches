@@ -12,7 +12,7 @@ Additionally, it adds some shortcuts:
 
 ### Download
 - [git branch](https://codeberg.org/sevz/dwl/src/branch/client-opacity)
-- [2024-06-07](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/client-opacity/client-opacity.patch)
+- [2025-01-20](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/client-opacity/client-opacity.patch)
 
 ### Authors
 - [sevz](https://codeberg.org/sevz)
