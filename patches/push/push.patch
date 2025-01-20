@@ -1,4 +1,4 @@
-From 23f9113fd746081a6c32d9c6367f19eabe9a91b3 Mon Sep 17 00:00:00 2001
+From 06d86c26da60e4196ec3c5228b04c66ac042a1f8 Mon Sep 17 00:00:00 2001
 From: "Devin J. Pohly" <djpohly@gmail.com>
 Date: Thu, 4 Mar 2021 00:45:50 -0600
 Subject: [PATCH] port dwm "push" patch to dwl
@@ -17,7 +17,7 @@ Signed-off-by: Leonardo Hernández Hernández <leohdz172@proton.me>
  create mode 100644 push.h
 
 diff --git a/Makefile b/Makefile
-index 8db7409c..e742ed3f 100644
+index 578194f2..f919a61e 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -19,7 +19,7 @@ LDLIBS    = `$(PKG_CONFIG) --libs $(PKGS)` $(WLR_LIBS) -lm $(LIBS)
@@ -30,10 +30,10 @@ index 8db7409c..e742ed3f 100644
  	wlr-output-power-management-unstable-v1-protocol.h xdg-shell-protocol.h
  util.o: util.c util.h
 diff --git a/dwl.c b/dwl.c
-index 9021e442..f9e44f33 100644
+index ad21e1ba..69753921 100644
 --- a/dwl.c
 +++ b/dwl.c
-@@ -425,7 +425,9 @@ static xcb_atom_t netatom[NetLast];
+@@ -450,7 +450,9 @@ static struct wlr_xwayland *xwayland;
  #endif
  
  /* configuration, allows nested code to access above variables */
@@ -123,5 +123,5 @@ index 00000000..59c0f80e
 +static void pushdown(const Arg *arg);
 +static void pushup(const Arg *arg);
 -- 
-2.46.0
+2.48.0
 
