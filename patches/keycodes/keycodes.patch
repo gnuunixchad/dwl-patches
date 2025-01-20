@@ -1,4 +1,4 @@
-From 477b53a171133ff7fb2144270b30dd4a86e61f0d Mon Sep 17 00:00:00 2001
+From 308eda668e1d6496a605e44be34fd44c841a1133 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Leonardo=20Hern=C3=A1ndez=20Hern=C3=A1ndez?=
  <leohdz172@proton.me>
 Date: Fri, 4 Jun 2021 16:51:01 -0500
@@ -127,10 +127,10 @@ index 22d2171d..87a6e60f 100644
  
  static const Button buttons[] = {
 diff --git a/dwl.c b/dwl.c
-index 9021e442..ea9d134c 100644
+index ad21e1ba..1c9e0ae5 100644
 --- a/dwl.c
 +++ b/dwl.c
-@@ -147,7 +147,7 @@ typedef struct {
+@@ -143,7 +143,7 @@ typedef struct {
  
  typedef struct {
  	uint32_t mod;
@@ -139,7 +139,7 @@ index 9021e442..ea9d134c 100644
  	void (*func)(const Arg *);
  	const Arg arg;
  } Key;
-@@ -155,9 +155,8 @@ typedef struct {
+@@ -151,9 +151,8 @@ typedef struct {
  typedef struct {
  	struct wlr_keyboard_group *wlr_group;
  
@@ -151,7 +151,7 @@ index 9021e442..ea9d134c 100644
  	struct wl_event_source *key_repeat_source;
  
  	struct wl_listener modifiers;
-@@ -295,7 +294,7 @@ static void gpureset(struct wl_listener *listener, void *data);
+@@ -291,7 +290,7 @@ static void gpureset(struct wl_listener *listener, void *data);
  static void handlesig(int signo);
  static void incnmaster(const Arg *arg);
  static void inputdevice(struct wl_listener *listener, void *data);
@@ -160,7 +160,7 @@ index 9021e442..ea9d134c 100644
  static void keypress(struct wl_listener *listener, void *data);
  static void keypressmod(struct wl_listener *listener, void *data);
  static int keyrepeat(void *data);
-@@ -1551,7 +1550,7 @@ inputdevice(struct wl_listener *listener, void *data)
+@@ -1597,7 +1596,7 @@ inputdevice(struct wl_listener *listener, void *data)
  }
  
  int
@@ -169,7 +169,7 @@ index 9021e442..ea9d134c 100644
  {
  	/*
  	 * Here we handle compositor keybindings. This is when the compositor is
-@@ -1561,7 +1560,7 @@ keybinding(uint32_t mods, xkb_keysym_t sym)
+@@ -1607,7 +1606,7 @@ keybinding(uint32_t mods, xkb_keysym_t sym)
  	const Key *k;
  	for (k = keys; k < END(keys); k++) {
  		if (CLEANMASK(mods) == CLEANMASK(k->mod)
@@ -178,7 +178,7 @@ index 9021e442..ea9d134c 100644
  			k->func(&k->arg);
  			return 1;
  		}
-@@ -1572,17 +1571,12 @@ keybinding(uint32_t mods, xkb_keysym_t sym)
+@@ -1618,17 +1617,12 @@ keybinding(uint32_t mods, xkb_keysym_t sym)
  void
  keypress(struct wl_listener *listener, void *data)
  {
@@ -196,7 +196,7 @@ index 9021e442..ea9d134c 100644
  
  	int handled = 0;
  	uint32_t mods = wlr_keyboard_get_modifiers(&group->wlr_group->keyboard);
-@@ -1591,19 +1585,16 @@ keypress(struct wl_listener *listener, void *data)
+@@ -1637,19 +1631,16 @@ keypress(struct wl_listener *listener, void *data)
  
  	/* On _press_ if there is no active screen locker,
  	 * attempt to process a compositor keybinding. */
@@ -220,7 +220,7 @@ index 9021e442..ea9d134c 100644
  		wl_event_source_timer_update(group->key_repeat_source, 0);
  	}
  
-@@ -1633,15 +1624,13 @@ int
+@@ -1679,15 +1670,13 @@ int
  keyrepeat(void *data)
  {
  	KeyboardGroup *group = data;
@@ -759,10 +759,10 @@ index 00000000..047b76b0
 +#define Key_XF86KbdLcdMenu4             0x2c3
 +#define Key_XF86KbdLcdMenu5             0x2c4
 -- 
-2.46.0
+2.48.0
 
 
-From c4cd9dae5d38ebbb96231da2afa85652444163df Mon Sep 17 00:00:00 2001
+From 16c0b9be41ba111bf551fd2e5e2bdaa537c6990d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Leonardo=20Hern=C3=A1ndez=20Hern=C3=A1ndez?=
  <leohdz172@proton.me>
 Date: Sun, 19 Mar 2023 15:50:07 -0600
@@ -879,5 +879,5 @@ index 00000000..37655611
 +	return !ok;
 +}
 -- 
-2.46.0
+2.48.0
 
