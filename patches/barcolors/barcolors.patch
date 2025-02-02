@@ -1,14 +1,14 @@
-From 6d9073e79a32fbb53fdd9579c8674d62b7b64eb7 Mon Sep 17 00:00:00 2001
+From d2b529d9ebee6b2e625afd5c89c2ede5bb0ca91b Mon Sep 17 00:00:00 2001
 From: Kerberoge <sjoerdenjh@gmail.com>
 Date: Sun, 25 Aug 2024 22:41:55 +0200
 Subject: [PATCH 1/1] updated barcolors
 
 ---
- dwl.c | 90 +++++++++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 84 insertions(+), 6 deletions(-)
+ dwl.c | 93 +++++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 87 insertions(+), 6 deletions(-)
 
 diff --git a/dwl.c b/dwl.c
-index ece537a..cab15fb 100644
+index ece537a..6663399 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -83,6 +83,7 @@
@@ -50,7 +50,7 @@ index ece537a..cab15fb 100644
  
  	wl_list_for_each(c, &clients, link) {
  		if (c->mon != m)
-@@ -1577,6 +1576,85 @@ drawbars(void)
+@@ -1577,6 +1576,88 @@ drawbars(void)
  		drawbar(m);
  }
  
@@ -64,23 +64,23 @@ index ece537a..cab15fb 100644
 +
 +	/* calculate real width of stext */
 +	for (p = stext; *p; p++) {
-+		if (*p == '^') {
++		if (PREFIX(p, "^^")) {
++			strncat(rstext, p, 2);
 +			p++;
-+			if (PREFIX(p, "fg(") || PREFIX(p, "bg(")) {
-+				argend = strchr(p, ')');
-+				if (!argend)
-+					argend = p + 2;
-+				p = argend;
-+			} else if (*p == '^') {
-+				strncat(rstext, p, 1);
++		} else if (PREFIX(p, "^fg(") || PREFIX(p, "^bg(")) {
++			argend = strchr(p, ')');
++			if (!argend) { /* ignore this command */
++				argstart = strchr(p, '(') + 1;
++				strncat(rstext, p, argstart - p);
++				p = argstart - 1;
 +			} else {
-+				strncat(rstext, p - 1, 2);
++				p = argend;
 +			}
 +		} else {
 +			strncat(rstext, p, 1);
 +		}
 +	}
-+	tw = TEXTW(m, rstext) - m->lrpad + 2; /* 2px right padding */
++	tw = TEXTW(m, rstext) - m->lrpad;
 +
 +	x = m->b.width - tw;
 +	itext = stext;
@@ -88,48 +88,51 @@ index ece537a..cab15fb 100644
 +	scheme[1] = colors[SchemeNorm][1];
 +	drwl_setscheme(m->drw, scheme);
 +	for (p = stext; *p; p++) {
-+		if (*p == '^') {
++		if (PREFIX(p, "^^")) {
 +			p++;
-+			if (PREFIX(p, "fg(") || PREFIX(p, "bg(")) {
-+				*(p - 1) = '\0';
-+				iw = TEXTW(m, itext) - m->lrpad;
-+				if (*itext) /* only draw text if there is something to draw */
-+					x = drwl_text(m->drw, x, 0, iw, m->b.height, 0, itext, 0);
-+				*(p - 1) = '^';
-+				
-+				argstart = strchr(p, '(') + 1;
-+				argend = strchr(argstart, ')');
-+				if (!argend) argend = argstart - 1;
-+				itext = argend + 1;
-+
-+				if (PREFIX(p, "fg("))
-+					color = &scheme[0];
-+				else
-+					color = &scheme[1];
-+
-+				if (argend - argstart > 0) {
-+					*argend = '\0';
-+					*color = strtoul(argstart, NULL, 16);
-+					*color = *color << 8 | 0xff; /* add alpha channel */
-+					*argend = ')';
-+				} else {
-+					*color = 0; /* reset */
-+				}
-+
-+				/* reset color back to normal if none was provided */
-+				if (!scheme[0])
-+					scheme[0] = colors[SchemeNorm][0];
-+				if (!scheme[1])
-+					scheme[1] = colors[SchemeNorm][1];
-+
-+				drwl_setscheme(m->drw, scheme);
-+				p = argend;
++		} else if (PREFIX(p, "^fg(") || PREFIX(p, "^bg(")) {
++			argstart = strchr(p, '(') + 1;
++			argend = strchr(argstart, ')');
++			if (!argend) { /* ignore this command */
++				p = argstart - 1;
++				continue;
 +			}
++
++			*p = '\0';
++			iw = TEXTW(m, itext) - m->lrpad;
++			if (*itext) /* only draw text if there is something to draw */
++				x = drwl_text(m->drw, x, 0, iw, m->b.height, 0, itext, 0);
++			*p = '^';
++
++			if (PREFIX(p, "^fg("))
++				color = &scheme[0];
++			else
++				color = &scheme[1];
++
++			if (argend != argstart) {
++				*argend = '\0';
++				*color = strtoul(argstart, NULL, 16);
++				*color = *color << 8 | 0xff; /* add alpha channel */
++				*argend = ')';
++			} else {
++				*color = 0; /* reset */
++			}
++
++			/* reset color back to normal if none was provided */
++			if (!scheme[0])
++				scheme[0] = colors[SchemeNorm][0];
++			if (!scheme[1])
++				scheme[1] = colors[SchemeNorm][1];
++
++			itext = argend + 1;
++			drwl_setscheme(m->drw, scheme);
++			p = argend;
 +		}
 +	}
 +	iw = TEXTW(m, itext) - m->lrpad;
 +	if (*itext)
 +		drwl_text(m->drw, x, 0, iw, m->b.height, 0, itext, 0);
++
 +	return tw;
 +}
 +
@@ -137,5 +140,5 @@ index ece537a..cab15fb 100644
  focusclient(Client *c, int lift)
  {
 -- 
-2.46.0
+2.48.1
 
