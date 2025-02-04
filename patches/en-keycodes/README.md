@@ -3,7 +3,7 @@ Always use the English keymap to get keycodes, so key bindings work even when us
 
 ### Download
 - [git branch](https://codeberg.org/ForzCross/dwl/src/branch/en-keycodes.patch)
-- [2024-01-11](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/en-keycodes/en-keycodes.patch)
+- [v0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/en-keycodes/en-keycodes.patch)
 
 ### Authors
 - [ForzCross](https://codeberg.org/ForzCross)
