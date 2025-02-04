@@ -2,8 +2,8 @@
 Allows you to move a window up and down the stack.
 
 ### Download
-- [git branch](https://codeberg.org/wochap/dwl/src/branch/v0.5/movestack)
-- [v0.5](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/movestack/movestack.patch)
+- [git branch](https://codeberg.org/nikitaivanov/dwl/src/branch/movestack)
+- [v0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/movestack/movestack.patch)
 
 ### Authors
 - [wochap](https://codeberg.org/wochap)
