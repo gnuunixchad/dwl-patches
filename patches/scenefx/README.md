@@ -51,7 +51,7 @@ static const struct blur_data blur_data = {
 
 - [git branch](https://codeberg.org/wochap/dwl/src/branch/v0.8-a/scenefx)
 
-- [0.8](https://codeberg.org/dwl/dwl-patches/raw/commit/bfdd644ffe5c04924c19653869a79a96cd1e1f2e/patches/scenefx/scenefx.patch)
+- [0.8](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/scenefx/scenefx.patch)
 
   **NOTE:** This patch was tested with the `ab17e3810ac27b2706f73e9a4aaab89fae30363a` commit on the `main` branch of `SceneFX`. It supports rounded borders, blur, and shadows.
 
