@@ -12,7 +12,7 @@ with the example settings in `config.h`:
 ```c
 static const Block blocks[] = {
 	/*Icon*/	/*Command*/		/*Update Interval*/	/*Update Signal*/
-	{"", "cat /tmp/dwl-kblayout",					0,		1},
+	{"", "cat /tmp/dwl-kblayout",					0,		3},
 };
 ```
 
