@@ -1,4 +1,5 @@
 ### Description
+
 This patch adds per-client keyboard layout and ability to send current
 keyboard layout information to a status bar.
 
@@ -21,9 +22,11 @@ implementation happens to share some code. If you don't need
 any of these features, just disable it in `config.h`.
 
 ### Download
+
 - [git branch](https://codeberg.org/nikitaivanov/dwl/src/branch/kblayout)
 - [0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/kblayout/kblayout.patch)
 
 ### Authors
+
+- [Nikita Ivanov](https://codeberg.org/nikitaivanov) ([GitHub](https://github.com/NikitaIvanovV))
 - [ForzCross](https://codeberg.org/ForzCross)
-- [Nikita Ivanov](https://github.com/NikitaIvanovV)

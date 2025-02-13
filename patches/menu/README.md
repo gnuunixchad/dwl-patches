@@ -13,4 +13,4 @@ Edit `menus` array in `config.h` to add/change menus and use a different dmenu p
 - [2024-07-13](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/menu/menu.patch)
 
 ### Authors
-- [Nikita Ivanov](https://github.com/NikitaIvanovV)
+- [Nikita Ivanov](https://codeberg.org/nikitaivanov) ([GitHub](https://github.com/NikitaIvanovV))

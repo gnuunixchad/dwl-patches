@@ -7,5 +7,5 @@ Always use the English keymap to get keycodes, so key bindings work even when us
 
 ### Authors
 - [ForzCross](https://codeberg.org/ForzCross)
-- [Nikita Ivanov](https://github.com/NikitaIvanovV)
+- [Nikita Ivanov](https://codeberg.org/nikitaivanov) ([GitHub](https://github.com/NikitaIvanovV))
 - [dimkr](https://codeberg.org/dimkr) (<dima@dimakrasner.com>)

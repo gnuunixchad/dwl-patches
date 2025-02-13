@@ -10,5 +10,5 @@ natural scrolling enabled as well.
 
 ### Authors
 
-- Nikita Ivanov ([codeberg][codeberg]) ([GitHub][github])
+- [Nikita Ivanov](https://codeberg.org/nikitaivanov) ([GitHub](https://github.com/NikitaIvanovV))
 - [Neuromagus](https://codeberg.org/neuromagus)

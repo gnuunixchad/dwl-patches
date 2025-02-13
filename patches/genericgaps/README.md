@@ -22,7 +22,4 @@ gaps to be as big or bigger than "inner" gaps anyway.
 
 ### Authors
 
-- Nikita Ivanov ([codeberg][codeberg]) ([GitHub][github])
-
-[codeberg]: https://codeberg.org/nikitaivanov
-[github]:   https://github.com/NikitaIvanovV
+- [Nikita Ivanov](https://codeberg.org/nikitaivanov) ([GitHub](https://github.com/NikitaIvanovV))
