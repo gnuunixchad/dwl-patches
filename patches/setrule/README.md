@@ -20,6 +20,9 @@ setrulenoswallow(const Arg *arg) {
 }
 ```
 
+**NOTE:** If you happen to apply patches that add new options to the rules, make
+sure to update `rule_default` variable in `config.h` as well.
+
 [swallow]: /dwl/dwl-patches/src/branch/main/patches/swallow
 
 ### Download

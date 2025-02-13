@@ -1,12 +1,12 @@
-From 3fcf8eed49af57b1185c9a41cf660d2b3604da96 Mon Sep 17 00:00:00 2001
+From 8ac024bd9aebfe73a44069aae5ddd4499e9e1713 Mon Sep 17 00:00:00 2001
 From: Nikita Ivanov <nikita.vyach.ivanov@gmail.com>
 Date: Sun, 9 Feb 2025 23:12:09 +0100
 Subject: [PATCH] setrule: add/change rules at runtime
 
 ---
  config.def.h |  9 ++++++++-
- dwl.c        | 56 +++++++++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 63 insertions(+), 2 deletions(-)
+ dwl.c        | 57 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 64 insertions(+), 2 deletions(-)
 
 diff --git a/config.def.h b/config.def.h
 index 22d2171..666a8c3 100644
@@ -43,7 +43,7 @@ index 22d2171..666a8c3 100644
  	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_parenright, tag,            {.ui = ~0} },
  	{ MODKEY,                    XKB_KEY_comma,      focusmon,       {.i = WLR_DIRECTION_LEFT} },
 diff --git a/dwl.c b/dwl.c
-index def2562..bdbb8b6 100644
+index def2562..82929ca 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -290,6 +290,7 @@ static void focusmon(const Arg *arg);
@@ -122,12 +122,13 @@ index def2562..bdbb8b6 100644
  void
  gpureset(struct wl_listener *listener, void *data)
  {
-@@ -2417,6 +2463,14 @@ setpsel(struct wl_listener *listener, void *data)
+@@ -2417,6 +2463,15 @@ setpsel(struct wl_listener *listener, void *data)
  	wlr_seat_set_primary_selection(seat, event->source, event->serial);
  }
  
 +void
-+setruleisfloating(const Arg *arg) {
++setruleisfloating(const Arg *arg)
++{
 +	Rule *r = getrule(focustop(selmon));
 +	if (!r)
 +		return;
