@@ -12,7 +12,8 @@ option from the [swallow][swallow] patch:
 
 ```c
 void
-setrulenoswallow(const Arg *arg) {
+setrulenoswallow(const Arg *arg)
+{
 	Rule *r = getrule(focustop(selmon));
 	if (!r)
 		return;
