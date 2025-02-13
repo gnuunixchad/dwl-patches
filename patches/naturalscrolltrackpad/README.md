@@ -1,10 +1,14 @@
 ### Description
-Set natural scrolling only for trackpads.
+
+Set natural scrolling only for trackpads. Without this patch, setting
+`natural_scrolling` to 1 in `config.h` results in a regular mouse wheel having
+natural scrolling enabled as well.
 
 ### Download
-- [git branch](https://codeberg.org/neuromagus/dwl/src/branch/naturalscrolltrackpad)
-- [2024-01-06](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/naturalscrolltrackpad/naturalscrolltrackpad.patch)
+
+- [0.7](/dwl/dwl-patches/raw/branch/main/patches/naturalscrolltrackpad/naturalscrolltrackpad.patch)
 
 ### Authors
+
+- Nikita Ivanov ([codeberg][codeberg]) ([GitHub][github])
 - [Neuromagus](https://codeberg.org/neuromagus)
-- [Nikita Ivanov](https://github.com/NikitaIvanovV)
