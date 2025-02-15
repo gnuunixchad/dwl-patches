@@ -38,7 +38,7 @@ static const struct blur_data blur_data = {
 
 > **NOTE:** Blur doesn't work on windows with opacity set (opacity_active, opacity_inactive)
 
-> **NOTE:** In DWL's Makefile `scenefx` must be placed before `wlroots-0.18`, e.g. `PKGS = scenefx wlroots-0.18 wayland-server ...`
+> **NOTE:** In DWL's Makefile `scenefx-0.2` must be placed before `wlroots-0.18`, e.g. `PKGS = scenefx-0.2 wlroots-0.18 wayland-server ...`
 
 <details>
 <summary>Preview</summary>
