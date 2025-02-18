@@ -19,10 +19,14 @@ Note that you're responsible yourself for reloading ressources like fonts, which
 A lot of components of dwl will also only get run on a trigger (the tiling for example).
 So not every change will be immediate.
 
-#### Note
-This patches triggers `-Wpedantic` a bunch (there's no way around this, `dlsym` yields `void*` pointers to functions).
+#### Notes
+##### reduce compile errors
+This patch triggers `-Wpedantic` a bunch (I don't think there's a way around this, `dlsym` yields `void*` pointers to functions).
 This will show a lot of warnings but cause no errors.
 So you may want to disable this compile option in order to get readable compiler output.
+##### runtime dependencies
+This does depend on you having a notification daemon like `dunst` or `mako` running as well as
+having `notify-send` installed in order for the compositor to inform you of the reload.
 
 #### How?
 Most of all dwl functionality is moved into a shared object file `dwl.so`, which can be reloaded at runtime.

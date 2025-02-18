@@ -1,4 +1,4 @@
-From 4e0b5b310180e4328c050e4878bf8261937848d5 Mon Sep 17 00:00:00 2001
+From ce812b47485851066318e0604f83472d8064e604 Mon Sep 17 00:00:00 2001
 From: Sivecano <sivecano@gmail.com>
 Date: Sun, 26 Jan 2025 18:30:02 +0100
 Subject: [PATCH] redo hot-reloading in one file
@@ -6,10 +6,10 @@ Subject: [PATCH] redo hot-reloading in one file
 ---
  Makefile     |  18 +-
  config.def.h |   5 +-
- dwl.c        | 471 +++++++++++++++++++++++++++++++++++++++------------
+ dwl.c        | 475 +++++++++++++++++++++++++++++++++++++++------------
  util.c       |  34 ++++
  util.h       |   6 +
- 5 files changed, 417 insertions(+), 117 deletions(-)
+ 5 files changed, 421 insertions(+), 117 deletions(-)
 
 diff --git a/Makefile b/Makefile
 index 578194f..567e9b9 100644
@@ -93,7 +93,7 @@ index 22d2171..6e3dda1 100644
  	{ MODKEY,                    XKB_KEY_k,          focusstack,     {.i = -1} },
  	{ MODKEY,                    XKB_KEY_i,          incnmaster,     {.i = +1} },
 diff --git a/dwl.c b/dwl.c
-index ec4ca86..c852b9b 100644
+index ec4ca86..8d1eceb 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -1,6 +1,15 @@
@@ -259,7 +259,7 @@ index ec4ca86..c852b9b 100644
  static struct wl_listener request_set_psel = {.notify = setpsel};
  static struct wl_listener request_set_sel = {.notify = setsel};
  static struct wl_listener request_set_cursor_shape = {.notify = setcursorshape};
-@@ -449,6 +535,34 @@ static struct wl_listener xwayland_ready = {.notify = xwaylandready};
+@@ -449,8 +535,38 @@ static struct wl_listener xwayland_ready = {.notify = xwaylandready};
  static struct wlr_xwayland *xwayland;
  #endif
  
@@ -291,10 +291,14 @@ index ec4ca86..c852b9b 100644
 +
 +#ifdef HOT
 +
++#define static
  /* configuration, allows nested code to access above variables */
  #include "config.h"
++#undef static
  
-@@ -692,10 +806,12 @@ checkidleinhibitor(struct wlr_surface *exclude)
+ /* attempt to encapsulate suck into one file */
+ #include "client.h"
+@@ -692,10 +808,12 @@ checkidleinhibitor(struct wlr_surface *exclude)
  	wlr_idle_notifier_v1_set_inhibited(idle_notifier, inhibited);
  }
  
@@ -308,7 +312,7 @@ index ec4ca86..c852b9b 100644
  #ifdef XWAYLAND
  	wlr_xwayland_destroy(xwayland);
  	xwayland = NULL;
-@@ -707,7 +823,7 @@ cleanup(void)
+@@ -707,7 +825,7 @@ cleanup(void)
  	}
  	wlr_xcursor_manager_destroy(cursor_mgr);
  
@@ -317,7 +321,7 @@ index ec4ca86..c852b9b 100644
  
  	/* If it's not destroyed manually it will cause a use-after-free of wlr_seat.
  	 * Destroy it until it's fixed in the wlroots side */
-@@ -719,6 +835,8 @@ cleanup(void)
+@@ -719,6 +837,8 @@ cleanup(void)
  	wlr_scene_node_destroy(&scene->tree.node);
  }
  
@@ -326,7 +330,7 @@ index ec4ca86..c852b9b 100644
  void
  cleanupmon(struct wl_listener *listener, void *data)
  {
-@@ -732,10 +850,10 @@ cleanupmon(struct wl_listener *listener, void *data)
+@@ -732,10 +852,10 @@ cleanupmon(struct wl_listener *listener, void *data)
  			wlr_layer_surface_v1_destroy(l->layer_surface);
  	}
  
@@ -340,7 +344,7 @@ index ec4ca86..c852b9b 100644
  	m->wlr_output->data = NULL;
  	wlr_output_layout_remove(output_layout, m->wlr_output);
  	wlr_scene_output_destroy(m->scene_output);
-@@ -748,37 +866,37 @@ cleanupmon(struct wl_listener *listener, void *data)
+@@ -748,37 +868,37 @@ cleanupmon(struct wl_listener *listener, void *data)
  void
  cleanuplisteners(void)
  {
@@ -408,7 +412,7 @@ index ec4ca86..c852b9b 100644
  #endif
  }
  
-@@ -905,8 +1023,7 @@ commitpopup(struct wl_listener *listener, void *data)
+@@ -905,8 +1025,7 @@ commitpopup(struct wl_listener *listener, void *data)
  	box.x -= (type == LayerShell ? l->scene->node.x : c->geom.x);
  	box.y -= (type == LayerShell ? l->scene->node.y : c->geom.y);
  	wlr_xdg_popup_unconstrain_from_box(popup, &box);
@@ -418,7 +422,7 @@ index ec4ca86..c852b9b 100644
  }
  
  void
-@@ -1236,8 +1353,8 @@ destroydecoration(struct wl_listener *listener, void *data)
+@@ -1236,8 +1355,8 @@ destroydecoration(struct wl_listener *listener, void *data)
  {
  	Client *c = wl_container_of(listener, c, destroy_decoration);
  
@@ -429,7 +433,7 @@ index ec4ca86..c852b9b 100644
  }
  
  void
-@@ -1246,8 +1363,7 @@ destroydragicon(struct wl_listener *listener, void *data)
+@@ -1246,8 +1365,7 @@ destroydragicon(struct wl_listener *listener, void *data)
  	/* Focus enter isn't sent during drag, so refocus the focused node. */
  	focusclient(focustop(selmon), 1);
  	motionnotify(0, NULL, 0, 0, 0, 0);
@@ -439,7 +443,7 @@ index ec4ca86..c852b9b 100644
  }
  
  void
-@@ -1256,8 +1372,7 @@ destroyidleinhibitor(struct wl_listener *listener, void *data)
+@@ -1256,8 +1374,7 @@ destroyidleinhibitor(struct wl_listener *listener, void *data)
  	/* `data` is the wlr_surface of the idle inhibitor being destroyed,
  	 * at this point the idle inhibitor is still in the list of the manager */
  	checkidleinhibitor(wlr_surface_get_root_surface(data));
@@ -449,7 +453,7 @@ index ec4ca86..c852b9b 100644
  }
  
  void
-@@ -1266,9 +1381,9 @@ destroylayersurfacenotify(struct wl_listener *listener, void *data)
+@@ -1266,9 +1383,9 @@ destroylayersurfacenotify(struct wl_listener *listener, void *data)
  	LayerSurface *l = wl_container_of(listener, l, destroy);
  
  	wl_list_remove(&l->link);
@@ -462,7 +466,7 @@ index ec4ca86..c852b9b 100644
  	wlr_scene_node_destroy(&l->scene->node);
  	wlr_scene_node_destroy(&l->popups->node);
  	free(l);
-@@ -1287,9 +1402,9 @@ destroylock(SessionLock *lock, int unlock)
+@@ -1287,9 +1404,9 @@ destroylock(SessionLock *lock, int unlock)
  	motionnotify(0, NULL, 0, 0, 0, 0);
  
  destroy:
@@ -475,7 +479,7 @@ index ec4ca86..c852b9b 100644
  
  	wlr_scene_node_destroy(&lock->scene->node);
  	cur_lock = NULL;
-@@ -1303,7 +1418,7 @@ destroylocksurface(struct wl_listener *listener, void *data)
+@@ -1303,7 +1420,7 @@ destroylocksurface(struct wl_listener *listener, void *data)
  	struct wlr_session_lock_surface_v1 *surface, *lock_surface = m->lock_surface;
  
  	m->lock_surface = NULL;
@@ -484,7 +488,7 @@ index ec4ca86..c852b9b 100644
  
  	if (lock_surface->surface != seat->keyboard_state.focused_surface)
  		return;
-@@ -1323,23 +1438,23 @@ destroynotify(struct wl_listener *listener, void *data)
+@@ -1323,23 +1440,23 @@ destroynotify(struct wl_listener *listener, void *data)
  {
  	/* Called when the xdg_toplevel is destroyed. */
  	Client *c = wl_container_of(listener, c, destroy);
@@ -520,7 +524,7 @@ index ec4ca86..c852b9b 100644
  	}
  	free(c);
  }
-@@ -1354,7 +1469,7 @@ destroypointerconstraint(struct wl_listener *listener, void *data)
+@@ -1354,7 +1471,7 @@ destroypointerconstraint(struct wl_listener *listener, void *data)
  		active_constraint = NULL;
  	}
  
@@ -529,7 +533,7 @@ index ec4ca86..c852b9b 100644
  	free(pointer_constraint);
  }
  
-@@ -1370,9 +1485,9 @@ destroykeyboardgroup(struct wl_listener *listener, void *data)
+@@ -1370,9 +1487,9 @@ destroykeyboardgroup(struct wl_listener *listener, void *data)
  {
  	KeyboardGroup *group = wl_container_of(listener, group, destroy);
  	wl_event_source_remove(group->key_repeat_source);
@@ -542,7 +546,7 @@ index ec4ca86..c852b9b 100644
  	wlr_keyboard_group_destroy(group->wlr_group);
  	free(group);
  }
-@@ -1538,8 +1653,8 @@ gpureset(struct wl_listener *listener, void *data)
+@@ -1538,8 +1655,8 @@ gpureset(struct wl_listener *listener, void *data)
  	if (!(alloc = wlr_allocator_autocreate(backend, drw)))
  		die("couldn't recreate allocator");
  
@@ -553,7 +557,7 @@ index ec4ca86..c852b9b 100644
  
  	wlr_compositor_set_renderer(compositor, drw);
  
-@@ -2229,6 +2344,8 @@ resize(Client *c, struct wlr_box geo, int interact)
+@@ -2229,6 +2346,8 @@ resize(Client *c, struct wlr_box geo, int interact)
  	wlr_scene_subsurface_tree_set_clip(&c->scene_surface->node, &clip);
  }
  
@@ -562,7 +566,7 @@ index ec4ca86..c852b9b 100644
  void
  run(char *startup_cmd)
  {
-@@ -2268,11 +2385,11 @@ run(char *startup_cmd)
+@@ -2268,11 +2387,11 @@ run(char *startup_cmd)
  	if (fd_set_nonblock(STDOUT_FILENO) < 0)
  		close(STDOUT_FILENO);
  
@@ -576,7 +580,7 @@ index ec4ca86..c852b9b 100644
  
  	/* TODO hack to get cursor to display in its initial location (100, 100)
  	 * instead of (0, 0) and then jumping. still may not be fully
-@@ -2288,6 +2405,9 @@ run(char *startup_cmd)
+@@ -2288,6 +2407,9 @@ run(char *startup_cmd)
  	wl_display_run(dpy);
  }
  
@@ -586,7 +590,7 @@ index ec4ca86..c852b9b 100644
  void
  setcursor(struct wl_listener *listener, void *data)
  {
-@@ -2434,17 +2554,19 @@ setsel(struct wl_listener *listener, void *data)
+@@ -2434,17 +2556,19 @@ setsel(struct wl_listener *listener, void *data)
  	wlr_seat_set_selection(seat, event->source, event->serial);
  }
  
@@ -608,7 +612,7 @@ index ec4ca86..c852b9b 100644
  
  	/* The Wayland display is managed by libwayland. It handles accepting
  	 * clients from the Unix socket, manging Wayland globals, and so on. */
-@@ -2460,7 +2582,7 @@ setup(void)
+@@ -2460,7 +2584,7 @@ setup(void)
  
  	/* Initialize the scene graph used to lay out windows */
  	scene = wlr_scene_create();
@@ -617,7 +621,7 @@ index ec4ca86..c852b9b 100644
  	for (i = 0; i < NUM_LAYERS; i++)
  		layers[i] = wlr_scene_tree_create(&scene->tree);
  	drag_icon = wlr_scene_tree_create(&scene->tree);
-@@ -2472,7 +2594,7 @@ setup(void)
+@@ -2472,7 +2596,7 @@ setup(void)
  	 * supports for shared memory, this configures that for clients. */
  	if (!(drw = wlr_renderer_autocreate(backend)))
  		die("couldn't create renderer");
@@ -626,7 +630,7 @@ index ec4ca86..c852b9b 100644
  
  	/* Create shm, drm and linux_dmabuf interfaces by ourselves.
  	 * The simplest way is call:
-@@ -2519,24 +2641,24 @@ setup(void)
+@@ -2519,24 +2643,24 @@ setup(void)
  
  	/* Initializes the interface used to implement urgency hints */
  	activation = wlr_xdg_activation_v1_create(dpy);
@@ -655,7 +659,7 @@ index ec4ca86..c852b9b 100644
  
  	/* Set up our client lists, the xdg-shell and the layer-shell. The xdg-shell is a
  	 * Wayland protocol which is used for application windows. For more
-@@ -2548,19 +2670,19 @@ setup(void)
+@@ -2548,19 +2672,19 @@ setup(void)
  	wl_list_init(&fstack);
  
  	xdg_shell = wlr_xdg_shell_create(dpy, 6);
@@ -680,7 +684,7 @@ index ec4ca86..c852b9b 100644
  	locked_bg = wlr_scene_rect_create(layers[LyrBlock], sgeom.width, sgeom.height,
  			(float [4]){0.1f, 0.1f, 0.1f, 1.0f});
  	wlr_scene_node_set_enabled(&locked_bg->node, 0);
-@@ -2570,10 +2692,10 @@ setup(void)
+@@ -2570,10 +2694,10 @@ setup(void)
  			wlr_server_decoration_manager_create(dpy),
  			WLR_SERVER_DECORATION_MANAGER_MODE_SERVER);
  	xdg_decoration_mgr = wlr_xdg_decoration_manager_v1_create(dpy);
@@ -693,7 +697,7 @@ index ec4ca86..c852b9b 100644
  
  	relative_pointer_mgr = wlr_relative_pointer_manager_v1_create(dpy);
  
-@@ -2601,14 +2723,14 @@ setup(void)
+@@ -2601,14 +2725,14 @@ setup(void)
  	 *
  	 * And more comments are sprinkled throughout the notify functions above.
  	 */
@@ -714,7 +718,7 @@ index ec4ca86..c852b9b 100644
  
  	/*
  	 * Configures a seat, which is a single "seat" at which a user sits and
-@@ -2616,27 +2738,27 @@ setup(void)
+@@ -2616,27 +2740,27 @@ setup(void)
  	 * pointer, touch, and drawing tablet device. We also rig up a listener to
  	 * let us know when new input devices are available on the backend.
  	 */
@@ -755,7 +759,7 @@ index ec4ca86..c852b9b 100644
  
  	/* Make sure XWayland clients don't connect to the parent X server,
  	 * e.g when running in the x11 backend or the wayland backend and the
-@@ -2648,8 +2770,8 @@ setup(void)
+@@ -2648,8 +2772,8 @@ setup(void)
  	 * It will be started when the first X client is started.
  	 */
  	if ((xwayland = wlr_xwayland_create(dpy, compositor, 1))) {
@@ -766,7 +770,7 @@ index ec4ca86..c852b9b 100644
  
  		setenv("DISPLAY", xwayland->display_name, 1);
  	} else {
-@@ -2658,6 +2780,9 @@ setup(void)
+@@ -2658,6 +2782,9 @@ setup(void)
  #endif
  }
  
@@ -776,7 +780,7 @@ index ec4ca86..c852b9b 100644
  void
  spawn(const Arg *arg)
  {
-@@ -3139,8 +3264,8 @@ void
+@@ -3139,8 +3266,8 @@ void
  dissociatex11(struct wl_listener *listener, void *data)
  {
  	Client *c = wl_container_of(listener, c, dissociate);
@@ -787,7 +791,7 @@ index ec4ca86..c852b9b 100644
  }
  
  void
-@@ -3175,17 +3300,139 @@ xwaylandready(struct wl_listener *listener, void *data)
+@@ -3175,17 +3302,141 @@ xwaylandready(struct wl_listener *listener, void *data)
  }
  #endif
  
@@ -848,7 +852,6 @@ index ec4ca86..c852b9b 100644
 +        char tmp[PATH_MAX];
 +        printf("checking path: %s\n", paths[i]);
 +        strcpy(tmp, paths[i]);
-+        // printf("tmp: %s\n", tmp);
 +        strcat(tmp, "/dwl.so");
 +        if (access(tmp, F_OK|R_OK) == 0)
 +        {
@@ -880,7 +883,9 @@ index ec4ca86..c852b9b 100644
 +    if (new == NULL)
 +    {
 +        wlr_log(WLR_ERROR, "couldn't load new dwl module from %s", get_module_path());
-+        system("notify-send -u low \"failed to reload dwl\"");
++
++        if (fork() == 0)
++            execl("/bin/env", "--", "Notify-send", "-u", "low",  "failed to reload dwl", NULL);
 +        return;
 +    }
 +
@@ -906,7 +911,8 @@ index ec4ca86..c852b9b 100644
 +    last_module = dwl_module;
 +    dwl_module = new;
 +
-+    system("notify-send -u low \"reloaded dwl\"");
++    if (fork() == 0)
++        execl("/bin/env", "--", "notify-send", "-u", "low",  "reloaded dwl", NULL);
 +
 +}
 +
@@ -928,7 +934,7 @@ index ec4ca86..c852b9b 100644
  		else if (c == 'v')
  			die("dwl " VERSION);
  		else
-@@ -3205,3 +3452,5 @@ main(int argc, char *argv[])
+@@ -3205,3 +3456,5 @@ main(int argc, char *argv[])
  usage:
  	die("Usage: %s [-v] [-d] [-s startup command]", argv[0]);
  }
