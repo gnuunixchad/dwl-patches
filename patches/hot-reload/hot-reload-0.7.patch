@@ -1,18 +1,18 @@
-From 5d74e3775b9ffc96b22910f62b4bb3892f6d96cf Mon Sep 17 00:00:00 2001
+From caa1adaf02ab4f9a326761ade5d1346149bc7c59 Mon Sep 17 00:00:00 2001
 From: Sivecano <sivecano@gmail.com>
 Date: Sun, 26 Jan 2025 18:30:02 +0100
 Subject: [PATCH] redo hot-reloading in one file
 
 ---
- Makefile     |  18 ++-
+ Makefile     |  19 ++-
  config.def.h |   5 +-
  dwl.c        | 337 ++++++++++++++++++++++++++++++++++++++++++++-------
  util.c       |  34 ++++++
  util.h       |   6 +
- 5 files changed, 351 insertions(+), 49 deletions(-)
+ 5 files changed, 351 insertions(+), 50 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 3358bae..9cf200f 100644
+index 3358bae..70d3d0f 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -13,13 +13,16 @@ DWLDEVCFLAGS = -g -pedantic -Wall -Wextra -Wdeclaration-after-statement \
@@ -44,17 +44,23 @@ index 3358bae..9cf200f 100644
  
  dist: clean
  	mkdir -p dwl-$(VERSION)
-@@ -63,6 +66,9 @@ install: dwl
+@@ -63,6 +66,8 @@ install: dwl
  	mkdir -p $(DESTDIR)$(PREFIX)/bin
  	cp -f dwl $(DESTDIR)$(PREFIX)/bin
  	chmod 755 $(DESTDIR)$(PREFIX)/bin/dwl
 +	mkdir -p $(DESTDIR)$(PREFIX)/lib
-+	cp -f dwl.so $(DESTDIR)$(PREFIX)/lib
-+	chmod 744 $(DESTDIR)$(PREFIX)/lib/dwl.so
++	install -m 744 dwl.so $(DESTDIR)$(PREFIX)/lib
  	mkdir -p $(DESTDIR)$(MANDIR)/man1
  	cp -f dwl.1 $(DESTDIR)$(MANDIR)/man1
  	chmod 644 $(DESTDIR)$(MANDIR)/man1/dwl.1
-@@ -76,3 +82,7 @@ uninstall:
+@@ -70,9 +75,13 @@ install: dwl
+ 	cp -f dwl.desktop $(DESTDIR)$(DATADIR)/wayland-sessions/dwl.desktop
+ 	chmod 644 $(DESTDIR)$(DATADIR)/wayland-sessions/dwl.desktop
+ uninstall:
+-	rm -f $(DESTDIR)$(PREFIX)/bin/dwl $(DESTDIR)$(MANDIR)/man1/dwl.1 \
++	rm -f $(DESTDIR)$(PREFIX)/bin/dwl $(DESTDIR)$(PREFIX)/lib/dwl.so $(DESTDIR)$(MANDIR)/man1/dwl.1 \
+ 		$(DESTDIR)$(DATADIR)/wayland-sessions/dwl.desktop
+ 
  .SUFFIXES: .c .o
  .c.o:
  	$(CC) $(CPPFLAGS) $(DWLCFLAGS) -o $@ -c $<
