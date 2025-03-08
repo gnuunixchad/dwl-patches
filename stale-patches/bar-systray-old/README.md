@@ -3,6 +3,8 @@ Add a system tray next to the [bar](https://codeberg.org/dwl/dwl-patches/src/bra
 
 ![preview](systray.png)
 
+**Superseded by [bar-systray](/dwl/dwl-patches/src/branch/main/patches/bar-systray).**
+
 ### Dependencies
 - GTK4
 - [bar.patch](https://codeberg.org/dwl/dwl-patches/src/branch/main/patches/bar) as mentioned.
