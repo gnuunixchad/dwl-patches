@@ -1,5 +1,6 @@
 ### Description
 A homegrown port of dwm's _truecenteredtitle_ patch, with the addition of a config option to toggle its effects.<br>Requires [the bar patch](https://codeberg.org/dwl/dwl-patches/src/branch/main/patches/bar) to be applied beforehand.
+
 ![](centeredtitle.webp)
 
 ### Download
