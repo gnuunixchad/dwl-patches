@@ -1,0 +1,48 @@
+From 1bffefbe03a8f3002c7eb285ba285226aee45ef2 Mon Sep 17 00:00:00 2001
+From: moonsabre <moonsabre@tuta.io>
+Date: Thu, 13 Mar 2025 13:05:03 -0700
+Subject: [PATCH] Bar title centering parameter.
+
+---
+ config.def.h |  1 +
+ dwl.c        | 12 +++++++++---
+ 2 files changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/config.def.h b/config.def.h
+index 5d1dc2b..8ac3a8b 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -9,6 +9,7 @@ static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will
+ static const unsigned int borderpx         = 1;  /* border pixel of windows */
+ static const int showbar                   = 1; /* 0 means no bar */
+ static const int topbar                    = 1; /* 0 means bottom bar */
++static const int centeredtitle             = 1; /* 1 means centered title */
+ static const char *fonts[]                 = {"monospace:size=10"};
+ static const float rootcolor[]             = COLOR(0x000000ff);
+ /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
+diff --git a/dwl.c b/dwl.c
+index ece537a..afa1d41 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -1551,9 +1551,15 @@ drawbar(Monitor *m)
+ 	if ((w = m->b.width - tw - x) > m->b.height) {
+ 		if (c) {
+ 			drwl_setscheme(m->drw, colors[m == selmon ? SchemeSel : SchemeNorm]);
+-			drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, client_get_title(c), 0);
+-			if (c && c->isfloating)
+-				drwl_rect(m->drw, x + boxs, boxs, boxw, boxw, 0, 0);
++			if (centeredtitle == 0 || TEXTW(selmon, client_get_title(c)) > w) {
++				drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, client_get_title(c), 0);
++				if (c && c->isfloating)
++					drwl_rect(m->drw, x + boxs, boxs, boxw, boxw, 0, 0);
++			} else {
++				drwl_text(m->drw, x, 0, w, m->b.height, (w - TEXTW(selmon, client_get_title(c))) / 2, client_get_title(c), 0);
++				if (c && c->isfloating)
++					drwl_rect(m->drw, x + ((w - TEXTW(selmon, client_get_title(c))) / 2 - boxs * 6), boxs, boxw, boxw, 0, 0);
++			}
+ 		} else {
+ 			drwl_setscheme(m->drw, colors[SchemeNorm]);
+ 			drwl_rect(m->drw, x, 0, w, m->b.height, 1, 1);
+-- 
+2.48.1
+
