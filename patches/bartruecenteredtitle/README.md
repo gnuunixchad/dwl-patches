@@ -3,7 +3,7 @@ A homegrown port of dwm's _truecenteredtitle_ patch, with the addition of a conf
 ![](centeredtitle.webp)
 
 ### Download
-- [v0.7](/dwl/dwl-patches/raw/branch/main/patches/bartruecenteredtitle/bar-truecenteredtitle-v0.7.patch)<br>Targets latest dwl release v0.7.
+- [v0.7/v0.6](/dwl/dwl-patches/raw/branch/main/patches/bartruecenteredtitle/bartruecenteredtitle.patch)<br>Works on both v0.7 and v0.6.
 
 ### Author
 - [moonsabre](https://codeberg.org/moonsabre)
