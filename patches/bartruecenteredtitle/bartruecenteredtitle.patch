@@ -1,12 +1,12 @@
-From 1bffefbe03a8f3002c7eb285ba285226aee45ef2 Mon Sep 17 00:00:00 2001
+From 17501c9f28226b1f332d6842be0d7f50ba618a29 Mon Sep 17 00:00:00 2001
 From: moonsabre <moonsabre@tuta.io>
-Date: Thu, 13 Mar 2025 13:05:03 -0700
+Date: Fri, 14 Mar 2025 16:04:25 -0700
 Subject: [PATCH] Bar title centering parameter.
 
 ---
- config.def.h |  1 +
- dwl.c        | 12 +++++++++---
- 2 files changed, 10 insertions(+), 3 deletions(-)
+ config.def.h | 1 +
+ dwl.c        | 9 +++++++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/config.def.h b/config.def.h
 index 5d1dc2b..8ac3a8b 100644
@@ -21,25 +21,23 @@ index 5d1dc2b..8ac3a8b 100644
  static const float rootcolor[]             = COLOR(0x000000ff);
  /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
 diff --git a/dwl.c b/dwl.c
-index ece537a..afa1d41 100644
+index ece537a..9eb816b 100644
 --- a/dwl.c
 +++ b/dwl.c
-@@ -1551,9 +1551,15 @@ drawbar(Monitor *m)
+@@ -1551,9 +1551,14 @@ drawbar(Monitor *m)
  	if ((w = m->b.width - tw - x) > m->b.height) {
  		if (c) {
  			drwl_setscheme(m->drw, colors[m == selmon ? SchemeSel : SchemeNorm]);
 -			drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, client_get_title(c), 0);
--			if (c && c->isfloating)
++			tw = TEXTW(selmon, client_get_title(c));
++			drwl_text(m->drw, x, 0, w, m->b.height,
++    		!centeredtitle || tw > w ? m->lrpad / 2 : (w - tw) / 2,
++    		client_get_title(c), 0);
+ 			if (c && c->isfloating)
 -				drwl_rect(m->drw, x + boxs, boxs, boxw, boxw, 0, 0);
-+			if (centeredtitle == 0 || TEXTW(selmon, client_get_title(c)) > w) {
-+				drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, client_get_title(c), 0);
-+				if (c && c->isfloating)
-+					drwl_rect(m->drw, x + boxs, boxs, boxw, boxw, 0, 0);
-+			} else {
-+				drwl_text(m->drw, x, 0, w, m->b.height, (w - TEXTW(selmon, client_get_title(c))) / 2, client_get_title(c), 0);
-+				if (c && c->isfloating)
-+					drwl_rect(m->drw, x + ((w - TEXTW(selmon, client_get_title(c))) / 2 - boxs * 6), boxs, boxw, boxw, 0, 0);
-+			}
++				drwl_rect(m->drw,
++				  !centeredtitle || tw > w ? x + boxs : x + ((w - tw) / 2 - boxs * 8),
++				  boxs, boxw, boxw, 0, 0);
  		} else {
  			drwl_setscheme(m->drw, colors[SchemeNorm]);
  			drwl_rect(m->drw, x, 0, w, m->b.height, 1, 1);

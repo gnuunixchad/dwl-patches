@@ -8,3 +8,4 @@ A homegrown port of dwm's _truecenteredtitle_ patch, with the addition of a conf
 
 ### Author
 - [moonsabre](https://codeberg.org/moonsabre)
+- [sewn](https://codeberg.org/sewn)
