@@ -2,6 +2,13 @@
 
 This patch adds an ability to add or change client rules at runtime.
 
+Sometimes it happens that some client rule I've set is not relevant in the
+current circumstance and adds major disturbance and annoyance to my work
+(e.g., `isfloating` is set or unset and I want the opposite). Changing the rule
+is not an option because it will require recompilation and restarting dwl, which
+is even worse. Having an option of always being able to change a rule solves
+this issue.
+
 The patch only adds one keybinding (`Alt+Shift+R`) to toggle `isfloating`
 option. Upon pressing it, dwl will try to find a matching rule for the focused
 client and change its `isfloating` setting. If there's no such a rule, a new
@@ -23,18 +30,12 @@ setrulenoswallow(const Arg *arg)
 }
 ```
 
-**NOTE**: This patch makes it impossible to have rules with `NULL` title *and*
-appid (such a rule is used internally to mark the end of `rules` array).
-
-**NOTE:** If you happen to apply patches that add new options to the rules, make
-sure to update `rule_default` variable in `config.h` as well. This variable is
-used for newly created rules.
-
 [swallow]: /dwl/dwl-patches/src/branch/main/patches/swallow
 
 ### Download
 
-- [0.7](/dwl/dwl-patches/raw/branch/main/patches/setrule/setrule.patch)
+- [v0.7](/dwl/dwl-patches/raw/branch/main/patches/setrule/setrule.patch)
+- [2025-02-14 v0.7](https://codeberg.org/dwl/dwl-patches/raw/commit/268bee3cee239e5bd52cceed88a52bfc21143cc3/patches/setrule/setrule.patch)
 
 ### Authors
 

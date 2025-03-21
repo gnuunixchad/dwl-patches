@@ -1,40 +1,28 @@
-From 8ac024bd9aebfe73a44069aae5ddd4499e9e1713 Mon Sep 17 00:00:00 2001
+From 3c78308f0d74ac6ef112804333f82c098e33bb40 Mon Sep 17 00:00:00 2001
 From: Nikita Ivanov <nikita.vyach.ivanov@gmail.com>
-Date: Sun, 9 Feb 2025 23:12:09 +0100
+Date: Fri, 21 Mar 2025 22:20:54 +0100
 Subject: [PATCH] setrule: add/change rules at runtime
 
 ---
- config.def.h |  9 ++++++++-
- dwl.c        | 57 +++++++++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 64 insertions(+), 2 deletions(-)
+ config.def.h |  4 ++++
+ dwl.c        | 67 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 70 insertions(+), 1 deletion(-)
 
 diff --git a/config.def.h b/config.def.h
-index 22d2171..666a8c3 100644
+index 22d2171..5b05e52 100644
 --- a/config.def.h
 +++ b/config.def.h
-@@ -20,14 +20,20 @@ static const float fullscreen_bg[]         = {0.1f, 0.1f, 0.1f, 1.0f}; /* You ca
+@@ -20,6 +20,9 @@ static const float fullscreen_bg[]         = {0.1f, 0.1f, 0.1f, 1.0f}; /* You ca
  /* logging */
  static int log_level = WLR_ERROR;
  
-+/* Max amount of rules */
++/* Max amount of dynamically added rules */
 +#define RULES_MAX 100
 +
  /* NOTE: ALWAYS keep a rule declared even if you don't use rules (e.g leave at least one example) */
--static const Rule rules[] = {
-+static Rule rules[RULES_MAX] = {
+ static const Rule rules[] = {
  	/* app_id             title       tags mask     isfloating   monitor */
- 	/* examples: */
- 	{ "Gimp_EXAMPLE",     NULL,       0,            1,           -1 }, /* Start on currently visible tags floating, not tiled */
- 	{ "firefox_EXAMPLE",  NULL,       1 << 8,       0,           -1 }, /* Start on ONLY tag "9" */
- };
- 
-+static const Rule rule_default =
-+	{ NULL,               NULL,       0,            0,           -1 };
-+
- /* layout(s) */
- static const Layout layouts[] = {
- 	/* symbol     arrange function */
-@@ -142,6 +148,7 @@ static const Key keys[] = {
+@@ -142,6 +145,7 @@ static const Key keys[] = {
  	{ MODKEY,                    XKB_KEY_space,      setlayout,      {0} },
  	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,      togglefloating, {0} },
  	{ MODKEY,                    XKB_KEY_e,         togglefullscreen, {0} },
@@ -43,7 +31,7 @@ index 22d2171..666a8c3 100644
  	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_parenright, tag,            {.ui = ~0} },
  	{ MODKEY,                    XKB_KEY_comma,      focusmon,       {.i = WLR_DIRECTION_LEFT} },
 diff --git a/dwl.c b/dwl.c
-index def2562..82929ca 100644
+index def2562..8beac1f 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -290,6 +290,7 @@ static void focusmon(const Arg *arg);
@@ -62,23 +50,34 @@ index def2562..82929ca 100644
  static void setsel(struct wl_listener *listener, void *data);
  static void setup(void);
  static void spawn(const Arg *arg);
-@@ -466,7 +468,7 @@ applyrules(Client *c)
+@@ -413,6 +415,9 @@ static struct wlr_box sgeom;
+ static struct wl_list mons;
+ static Monitor *selmon;
+ 
++static Rule *drules;
++static size_t druleslen;
++
+ #ifdef XWAYLAND
+ static void activatex11(struct wl_listener *listener, void *data);
+ static void associatex11(struct wl_listener *listener, void *data);
+@@ -466,7 +471,7 @@ applyrules(Client *c)
  	if (!(title = client_get_title(c)))
  		title = broken;
  
 -	for (r = rules; r < END(rules); r++) {
-+	for (r = rules; r->id || r->title; r++) {
++	for (r = drules; r < drules + druleslen; r++) {
  		if ((!r->title || strstr(title, r->title))
  				&& (!r->id || strstr(appid, r->id))) {
  			c->isfloating = r->isfloating;
-@@ -1472,6 +1474,50 @@ fullscreennotify(struct wl_listener *listener, void *data)
+@@ -1472,6 +1477,53 @@ fullscreennotify(struct wl_listener *listener, void *data)
  	setfullscreen(c, client_wants_fullscreen(c));
  }
  
 +Rule *
 +getrule(Client *c)
 +{
-+	Rule *r, *e = NULL;
++	Rule *r;
++	const Rule *e;
 +	const char *appid, *title;
 +
 +	if (!c)
@@ -89,40 +88,42 @@ index def2562..82929ca 100644
 +	if (!(title = client_get_title(c)))
 +		title = broken;
 +
-+	/*
-+	 * Find first matching rule from the end. It seems intuitive to me
-+	 * that the the first matching rule from the end is going to be
-+	 * overriden. I also do not include the last element (hence -2)
-+	 * in the search because we always want to keep at least one empty
-+	 * slot for applyrules().
-+	 */
-+	for (r = END(rules) - 2; r >= rules; r--) {
-+		if (!r->title && !r->id) {
-+			e = r;
-+		} else {
-+			if ((!r->title || strstr(title, r->title))
-+					&& (!r->id || strstr(appid, r->id))) {
-+				break;
-+			}
++	for (r = drules + druleslen - 1; r >= drules; r--)
++		if ((!r->title || strstr(title, r->title))
++				&& (!r->id || strstr(appid, r->id)))
++			goto found;
++
++	if (druleslen >= LENGTH(rules) + RULES_MAX)
++		return NULL; /* No free slots left */
++
++	r = drules + druleslen++;
++
++	/* Use [NULL,NULL] as the default rule if exists */
++	for (e = rules; e < END(rules); e++)
++		if (!e->title && !e->id) {
++			*r = *e;
++			break;
 +		}
-+	}
-+	if (r < rules)
-+		r = e;
-+	if (!r) /* No free slots left */
-+		return NULL;
-+	if (r == e) { /* Fill the empty slot */
-+		*r = rule_default;
-+		/* r->title = strdup(title); */
-+		r->id = strdup(appid);
++
++	/* No default rule found, set reasoble defaults */
++	if (e >= END(rules)) {
++		r->monitor = -1;
 +	}
 +
++	/* Only set title if appid is unset */
++	if (appid == broken)
++		r->title = strdup(title);
++	else
++		r->id = strdup(appid);
++
++found:
 +	return r;
 +}
 +
  void
  gpureset(struct wl_listener *listener, void *data)
  {
-@@ -2417,6 +2463,15 @@ setpsel(struct wl_listener *listener, void *data)
+@@ -2417,6 +2469,15 @@ setpsel(struct wl_listener *listener, void *data)
  	wlr_seat_set_primary_selection(seat, event->source, event->serial);
  }
  
@@ -138,6 +139,17 @@ index def2562..82929ca 100644
  void
  setsel(struct wl_listener *listener, void *data)
  {
+@@ -2645,6 +2706,10 @@ setup(void)
+ 		fprintf(stderr, "failed to setup XWayland X server, continuing without it\n");
+ 	}
+ #endif
++
++	drules = ecalloc(LENGTH(rules) + RULES_MAX, sizeof(Rule));
++	memcpy(drules, rules, sizeof(rules));
++	druleslen = LENGTH(rules);
+ }
+ 
+ void
 -- 
-2.48.1
+2.49.0
 
