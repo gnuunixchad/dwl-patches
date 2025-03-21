@@ -8,7 +8,7 @@ By default, two menus are available:
 - selecting a layout from a list by pressing `Alt+Shift+o`
 
 Edit `menus` array in `config.h` to add/change menus and use a different dmenu
-program.
+program (`wmenu` is the default).
 
 ### Download
 - [2025-03-21 v0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/menu/menu.patch)

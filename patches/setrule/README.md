@@ -30,7 +30,11 @@ setrulenoswallow(const Arg *arg)
 }
 ```
 
-[swallow]: /dwl/dwl-patches/src/branch/main/patches/swallow
+You can also try [menurule][menurule] patch if you want to be able to edit rules
+with dmenu.
+
+[swallow]:  /dwl/dwl-patches/src/branch/main/patches/swallow
+[menurule]: /dwl/dwl-patches/src/branch/main/patches/menurule
 
 ### Download
 
