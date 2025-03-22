@@ -10,8 +10,8 @@ line by avoiding cluttering the screen with many unusable terminals.
 
 `foot` is the terminal by default, you can change it in client rules in config.h.
 
-In `2025-03-03 v0.7` version, the patch had been rewritten from scratch to make
-it more robust and add a few more features:
+In `2025-03-03 v0.7` version and above, the patch had been rewritten from
+scratch to make it more robust and add a few more features:
 
 - "dynamically swallow" windows by pressing `Alt+a` (a focused window will
   swallow/unswallow the previously focused one)
@@ -22,8 +22,8 @@ it more robust and add a few more features:
 
 #### swallow.patch
 
-- [git branch](https://codeberg.org/nikitaivanov/dwl/src/branch/swallow)
-- [2025-03-03 v0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/swallow/swallow.patch) (added "dynamic swallowing support")
+- [v0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/swallow/swallow.patch)
+- [2025-03-03 v0.7](https://codeberg.org/dwl/dwl-patches/raw/commit/2e5748edfe1129f95c7bb1bf9dd590a897f55f57/patches/swallow/swallow.patch) (added "dynamic swallowing" support)
 - [2024-07-13](https://codeberg.org/dwl/dwl-patches/raw/commit/f1ed83eaeba46108f4ee8164094cb431d64a3e68/patches/swallow/swallow.patch)
 - [2024-07-13](https://codeberg.org/dwl/dwl-patches/raw/commit/f64d701bab2f9f52d3637edd091684f920407d87/patches/swallow/swallow.patch)
 - [2024-05-02](https://codeberg.org/dwl/dwl-patches/raw/commit/9c5d5d85f3ac780e7a14d5d0535e3349ce8b8f53/patches/swallow/swallow.patch)
@@ -39,7 +39,8 @@ it more robust and add a few more features:
 
 Apply this patch on top of the swallow.patch if you use FreeBSD.
 
-- [2025-03-03 v0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/swallow/swallow-freebsd.patch)
+- [v0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/swallow/swallow-freebsd.patch)
+- [2025-03-03 v0.7](https://codeberg.org/dwl/dwl-patches/raw/commit/2e5748edfe1129f95c7bb1bf9dd590a897f55f57/patches/swallow/swallow-freebsd.patch) (added "dynamic swallowing" support)
 - [2024-07-13](https://codeberg.org/dwl/dwl-patches/raw/commit/f1ed83eaeba46108f4ee8164094cb431d64a3e68/patches/swallow/swallow-freebsd.patch)
 
 ### Authors

@@ -1,13 +1,13 @@
-From 7255d7e2e1b87c0583a202ea20c83fa75466c0fc Mon Sep 17 00:00:00 2001
+From a220e1ed4b04a66c837dfc8e3363d3e696cbf541 Mon Sep 17 00:00:00 2001
 From: Nikita Ivanov <nikita.vyach.ivanov@gmail.com>
 Date: Wed, 5 Feb 2025 02:34:39 +0100
 Subject: [PATCH] Swallow: hide the terminal when it spawns a client
 
 ---
  client.h     |  12 ++++
- config.def.h |  10 +++-
+ config.def.h |  11 +++-
  dwl.c        | 152 +++++++++++++++++++++++++++++++++++++++++++++++++--
- 3 files changed, 167 insertions(+), 7 deletions(-)
+ 3 files changed, 168 insertions(+), 7 deletions(-)
 
 diff --git a/client.h b/client.h
 index 42f225f..bc9cad2 100644
@@ -33,18 +33,19 @@ index 42f225f..bc9cad2 100644
  client_get_clip(Client *c, struct wlr_box *clip)
  {
 diff --git a/config.def.h b/config.def.h
-index 22d2171..fb5f8fb 100644
+index 22d2171..42342f1 100644
 --- a/config.def.h
 +++ b/config.def.h
-@@ -13,6 +13,7 @@ static const float focuscolor[]            = COLOR(0x005577ff);
+@@ -13,6 +13,8 @@ static const float focuscolor[]            = COLOR(0x005577ff);
  static const float urgentcolor[]           = COLOR(0xff0000ff);
  /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
  static const float fullscreen_bg[]         = {0.1f, 0.1f, 0.1f, 1.0f}; /* You can also use glsl colors */
 +static int enableautoswallow = 1; /* enables autoswallowing newly spawned clients */
++static float swallowborder = 1.0f; /* add this multiplied by borderpx to border when a client is swallowed */
  
  /* tagging - TAGCOUNT must be no greater than 31 */
  #define TAGCOUNT (9)
-@@ -22,10 +23,11 @@ static int log_level = WLR_ERROR;
+@@ -22,10 +24,11 @@ static int log_level = WLR_ERROR;
  
  /* NOTE: ALWAYS keep a rule declared even if you don't use rules (e.g leave at least one example) */
  static const Rule rules[] = {
@@ -59,7 +60,7 @@ index 22d2171..fb5f8fb 100644
  };
  
  /* layout(s) */
-@@ -142,6 +144,8 @@ static const Key keys[] = {
+@@ -142,6 +145,8 @@ static const Key keys[] = {
  	{ MODKEY,                    XKB_KEY_space,      setlayout,      {0} },
  	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,      togglefloating, {0} },
  	{ MODKEY,                    XKB_KEY_e,         togglefullscreen, {0} },
@@ -69,7 +70,7 @@ index 22d2171..fb5f8fb 100644
  	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_parenright, tag,            {.ui = ~0} },
  	{ MODKEY,                    XKB_KEY_comma,      focusmon,       {.i = WLR_DIRECTION_LEFT} },
 diff --git a/dwl.c b/dwl.c
-index def2562..bbbbe6f 100644
+index def2562..71d500a 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -73,12 +73,13 @@
@@ -83,7 +84,7 @@ index def2562..bbbbe6f 100644
  #define TAGMASK                 ((1u << TAGCOUNT) - 1)
  #define LISTEN(E, L, H)         wl_signal_add((E), ((L)->notify = (H), (L)))
  #define LISTEN_STATIC(E, H)     do { static struct wl_listener _l = {.notify = (H)}; wl_signal_add((E), &_l); } while (0)
-+#define BORDERPX(C)             (borderpx + ((C)->swallowing ? (C)->swallowing->bw : 0))
++#define BORDERPX(C)             (borderpx + ((C)->swallowing ? (int)ceilf(swallowborder * (C)->swallowing->bw) : 0))
  
  /* enums */
  enum { CurNormal, CurPressed, CurMove, CurResize }; /* cursor */
@@ -346,5 +347,5 @@ index def2562..bbbbe6f 100644
  		if (c == exclusive_focus) {
  			exclusive_focus = NULL;
 -- 
-2.48.1
+2.49.0
 

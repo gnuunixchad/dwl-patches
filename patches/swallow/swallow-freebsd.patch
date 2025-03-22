@@ -1,4 +1,4 @@
-From 002e11e197cd254f06b65681ffd5bcf617d830b9 Mon Sep 17 00:00:00 2001
+From 301e1b368d92a32a7bdcd4bd1f0ede0295977e3e Mon Sep 17 00:00:00 2001
 From: Nikita Ivanov <nikita.vyach.ivanov@gmail.com>
 Date: Mon, 3 Mar 2025 19:49:07 +0100
 Subject: [PATCH] swallow: add FreeBSD support
@@ -8,7 +8,7 @@ Subject: [PATCH] swallow: add FreeBSD support
  1 file changed, 17 insertions(+)
 
 diff --git a/dwl.c b/dwl.c
-index bbbbe6f..dc55319 100644
+index 71d500a..52fdd9c 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -67,6 +67,14 @@
@@ -50,5 +50,5 @@ index bbbbe6f..dc55319 100644
  
  void
 -- 
-2.48.1
+2.49.0
 
