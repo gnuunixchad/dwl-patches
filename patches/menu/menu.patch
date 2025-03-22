@@ -1,12 +1,12 @@
-From 1ce61fea52891ed719898c05d616ec20d34f2c73 Mon Sep 17 00:00:00 2001
+From 7cfdf80b9ca536c29e49165e00b0b913685e396d Mon Sep 17 00:00:00 2001
 From: Nikita Ivanov <nikita.vyach.ivanov@gmail.com>
 Date: Fri, 21 Mar 2025 21:48:42 +0100
 Subject: [PATCH] Add menu command
 
 ---
  config.def.h |   8 +++
- dwl.c        | 154 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 162 insertions(+)
+ dwl.c        | 153 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 161 insertions(+)
 
 diff --git a/config.def.h b/config.def.h
 index 22d2171..a5914ca 100644
@@ -35,18 +35,10 @@ index 22d2171..a5914ca 100644
  	{ MODKEY,                    XKB_KEY_e,         togglefullscreen, {0} },
  	{ MODKEY,                    XKB_KEY_0,          view,           {.ui = ~0} },
 diff --git a/dwl.c b/dwl.c
-index def2562..04543a6 100644
+index def2562..868d0d0 100644
 --- a/dwl.c
 +++ b/dwl.c
-@@ -1,6 +1,7 @@
- /*
-  * See LICENSE file for copyright and license details.
-  */
-+#include <fcntl.h>
- #include <getopt.h>
- #include <libinput.h>
- #include <linux/input-event-codes.h>
-@@ -242,6 +243,12 @@ typedef struct {
+@@ -242,6 +242,12 @@ typedef struct {
  	struct wl_listener destroy;
  } SessionLock;
  
@@ -59,7 +51,7 @@ index def2562..04543a6 100644
  /* function declarations */
  static void applybounds(Client *c, struct wlr_box *bbox);
  static void applyrules(Client *c);
-@@ -302,6 +309,12 @@ static void killclient(const Arg *arg);
+@@ -302,6 +308,12 @@ static void killclient(const Arg *arg);
  static void locksession(struct wl_listener *listener, void *data);
  static void mapnotify(struct wl_listener *listener, void *data);
  static void maximizenotify(struct wl_listener *listener, void *data);
@@ -72,7 +64,7 @@ index def2562..04543a6 100644
  static void monocle(Monitor *m);
  static void motionabsolute(struct wl_listener *listener, void *data);
  static void motionnotify(uint32_t time, struct wlr_input_device *device, double sx,
-@@ -413,6 +426,11 @@ static struct wlr_box sgeom;
+@@ -413,6 +425,11 @@ static struct wlr_box sgeom;
  static struct wl_list mons;
  static Monitor *selmon;
  
@@ -84,7 +76,7 @@ index def2562..04543a6 100644
  #ifdef XWAYLAND
  static void activatex11(struct wl_listener *listener, void *data);
  static void associatex11(struct wl_listener *listener, void *data);
-@@ -1768,6 +1786,142 @@ maximizenotify(struct wl_listener *listener, void *data)
+@@ -1768,6 +1785,142 @@ maximizenotify(struct wl_listener *listener, void *data)
  		wlr_xdg_surface_schedule_configure(c->surface.xdg);
  }
  
@@ -121,7 +113,7 @@ index def2562..04543a6 100644
 +	close(fd_right[0]);
 +	close(fd_left[1]);
 +	menu_fd = fd_left[0];
-+	if (fcntl(menu_fd, F_SETFL, fcntl(menu_fd, F_GETFL) | O_NONBLOCK) == -1)
++	if (fd_set_nonblock(menu_fd) == -1)
 +		return;
 +	if (!(f = fdopen(fd_right[1], "w")))
 +		return;
