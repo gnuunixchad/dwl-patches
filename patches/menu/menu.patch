@@ -1,12 +1,12 @@
-From 7cfdf80b9ca536c29e49165e00b0b913685e396d Mon Sep 17 00:00:00 2001
+From da9861cf0448ca94011470634fd61c3ef2129a25 Mon Sep 17 00:00:00 2001
 From: Nikita Ivanov <nikita.vyach.ivanov@gmail.com>
 Date: Fri, 21 Mar 2025 21:48:42 +0100
 Subject: [PATCH] Add menu command
 
 ---
  config.def.h |   8 +++
- dwl.c        | 153 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 161 insertions(+)
+ dwl.c        | 156 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 164 insertions(+)
 
 diff --git a/config.def.h b/config.def.h
 index 22d2171..a5914ca 100644
@@ -35,7 +35,7 @@ index 22d2171..a5914ca 100644
  	{ MODKEY,                    XKB_KEY_e,         togglefullscreen, {0} },
  	{ MODKEY,                    XKB_KEY_0,          view,           {.ui = ~0} },
 diff --git a/dwl.c b/dwl.c
-index def2562..868d0d0 100644
+index def2562..b0e8310 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -242,6 +242,12 @@ typedef struct {
@@ -76,7 +76,7 @@ index def2562..868d0d0 100644
  #ifdef XWAYLAND
  static void activatex11(struct wl_listener *listener, void *data);
  static void associatex11(struct wl_listener *listener, void *data);
-@@ -1768,6 +1785,142 @@ maximizenotify(struct wl_listener *listener, void *data)
+@@ -1768,6 +1785,145 @@ maximizenotify(struct wl_listener *listener, void *data)
  		wlr_xdg_surface_schedule_configure(c->surface.xdg);
  }
  
@@ -133,12 +133,15 @@ index def2562..868d0d0 100644
 +	static int i = 0;
 +
 +	if (mask & (WL_EVENT_HANGUP | WL_EVENT_ERROR)) {
++		i = 0;
 +		menu(&(const Arg){ .v = NULL });
 +		return 0;
 +	}
 +	if ((n = read(menu_fd, line + i, LENGTH(line) - 1 - i)) == -1) {
-+		if (errno != EAGAIN)
++		if (errno != EAGAIN) {
++			i = 0;
 +			menu(&(const Arg){ .v = NULL });
++		}
 +		return 0;
 +	}
 +	line[i + n] = '\0';
