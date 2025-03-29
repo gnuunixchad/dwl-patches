@@ -1,14 +1,14 @@
-From b5b0214d74ad8eec0cf2da0a3f2afcea8245a782 Mon Sep 17 00:00:00 2001
+From e40de8cb1f33ebd7978f7f7843aa94ee241cb55a Mon Sep 17 00:00:00 2001
 From: vetu104 <vetu104@proton.me>
-Date: Sat, 8 Mar 2025 14:35:42 +0200
+Date: Sat, 29 Mar 2025 19:22:37 +0200
 Subject: [PATCH] Add a system tray next to sewn's bar
 
 ---
  Makefile          |  23 +-
  config.def.h      |   5 +
- dbus.c            | 240 +++++++++++++++
+ dbus.c            | 242 +++++++++++++++
  dbus.h            |  10 +
- dwl.c             | 109 ++++++-
+ dwl.c             | 107 ++++++-
  systray/helpers.c |  43 +++
  systray/helpers.h |  12 +
  systray/icon.c    | 149 +++++++++
@@ -19,9 +19,9 @@ Subject: [PATCH] Add a system tray next to sewn's bar
  systray/menu.h    |  11 +
  systray/tray.c    | 237 +++++++++++++++
  systray/tray.h    |  37 +++
- systray/watcher.c | 549 +++++++++++++++++++++++++++++++++
- systray/watcher.h |  34 +++
- 17 files changed, 2678 insertions(+), 13 deletions(-)
+ systray/watcher.c | 551 +++++++++++++++++++++++++++++++++
+ systray/watcher.h |  35 +++
+ 17 files changed, 2681 insertions(+), 13 deletions(-)
  create mode 100644 dbus.c
  create mode 100644 dbus.h
  create mode 100644 systray/helpers.c
@@ -114,46 +114,53 @@ index 5d1dc2b..451643e 100644
  };
 diff --git a/dbus.c b/dbus.c
 new file mode 100644
-index 0000000..653a133
+index 0000000..125312c
 --- /dev/null
 +++ b/dbus.c
-@@ -0,0 +1,240 @@
+@@ -0,0 +1,242 @@
 +#include "dbus.h"
 +
++#include "util.h"
++
 +#include <dbus/dbus.h>
++#include <stdlib.h>
 +#include <wayland-server-core.h>
 +
++#include <fcntl.h>
 +#include <stddef.h>
 +#include <stdint.h>
 +#include <stdio.h>
-+#if defined __linux__
-+#include <sys/eventfd.h>
-+#elif defined(__FreeBSD__) || defined(__OpenBSD__)
-+#include <sys/event.h>
-+#endif
 +#include <unistd.h>
 +
-+int efd = -1;
++static void
++close_pipe(void *data)
++{
++	int *pipefd = data;
++
++	close(pipefd[0]);
++	close(pipefd[1]);
++	free(pipefd);
++}
 +
 +static int
 +dwl_dbus_dispatch(int fd, unsigned int mask, void *data)
 +{
 +	DBusConnection *conn = data;
 +
-+	uint64_t dispatch_pending;
-+	DBusDispatchStatus status;
++	int pending;
++	DBusDispatchStatus oldstatus, newstatus;
 +
-+	status = dbus_connection_dispatch(conn);
++	oldstatus = dbus_connection_get_dispatch_status(conn);
++	newstatus = dbus_connection_dispatch(conn);
 +
-+	/*
-+	 * Don't clear pending flag if message queue wasn't
-+	 * fully drained
-+	 */
-+	if (status != DBUS_DISPATCH_COMPLETE)
++	/* Don't clear pending flag if status didn't change */
++	if (oldstatus == newstatus)
 +		return 0;
 +
-+	if (read(fd, &dispatch_pending, sizeof(uint64_t)) < 0)
++	if (read(fd, &pending, sizeof(int)) < 0) {
 +		perror("read");
++		die("Error in dbus dispatch");
++	}
 +
 +	return 0;
 +}
@@ -242,8 +249,8 @@ index 0000000..653a133
 +
 +	interval = dbus_timeout_get_interval(timeout);
 +
-+	timeout_source = wl_event_loop_add_timer(
-+		loop, dwl_dbus_timeout_handle, timeout);
++	timeout_source =
++		wl_event_loop_add_timer(loop, dwl_dbus_timeout_handle, timeout);
 +
 +	r = wl_event_source_timer_update(timeout_source, interval);
 +	if (r < 0) {
@@ -270,77 +277,74 @@ index 0000000..653a133
 +}
 +
 +static void
-+dwl_dbus_adjust_timeout(DBusTimeout *timeout, void *data)
++dwl_dbus_dispatch_status(DBusConnection *conn, DBusDispatchStatus status,
++                         void *data)
 +{
-+	int interval;
-+	struct wl_event_source *timeout_source;
++	int *pipefd = data;
 +
-+	timeout_source = dbus_timeout_get_data(timeout);
-+
-+	if (timeout_source) {
-+		interval = dbus_timeout_get_interval(timeout);
-+		wl_event_source_timer_update(timeout_source, interval);
-+	}
-+}
-+
-+static void
-+dwl_dbus_dispatch_status(DBusConnection *conn, DBusDispatchStatus status, void *data)
-+{
-+	if (status == DBUS_DISPATCH_DATA_REMAINS) {
-+		uint64_t dispatch_pending = 1;
-+		if (write(efd, &dispatch_pending, sizeof(uint64_t)) < 0)
++	if (status != DBUS_DISPATCH_COMPLETE) {
++		int pending = 1;
++		if (write(pipefd[1], &pending, sizeof(int)) < 0) {
 +			perror("write");
++			die("Error in dispatch status");
++		}
 +	}
 +}
 +
 +struct wl_event_source *
 +startbus(DBusConnection *conn, struct wl_event_loop *loop)
 +{
++	int *pipefd;
++	int pending = 1, flags;
 +	struct wl_event_source *bus_source = NULL;
-+	uint64_t dispatch_pending = 1;
++
++	pipefd = ecalloc(2, sizeof(int));
++
++	/*
++	 * Libdbus forbids calling dbus_connection_dipatch from the
++	 * DBusDispatchStatusFunction directly. Notify the event loop of
++	 * updates via a self-pipe.
++	 */
++	if (pipe(pipefd) < 0)
++		goto fail;
++	if (((flags = fcntl(pipefd[0], F_GETFD)) < 0) ||
++	    fcntl(pipefd[0], F_SETFD, flags | FD_CLOEXEC) < 0 ||
++	    ((flags = fcntl(pipefd[1], F_GETFD)) < 0) ||
++	    fcntl(pipefd[1], F_SETFD, flags | FD_CLOEXEC) < 0) {
++		goto fail;
++	}
 +
 +	dbus_connection_set_exit_on_disconnect(conn, FALSE);
 +
-+#if defined __linux__
-+	efd = eventfd(0, EFD_CLOEXEC);
-+#elif defined(__FreeBSD__) || defined(__OpenBSD__)
-+	efd = kqueue();
-+#endif
-+	if (efd < 0)
-+		goto fail;
-+
-+	dbus_connection_set_dispatch_status_function(conn, dwl_dbus_dispatch_status, NULL, NULL);
-+
-+	if (!dbus_connection_set_watch_functions(conn, dwl_dbus_add_watch,
-+	                                         dwl_dbus_remove_watch,
-+	                                         NULL, loop, NULL)) {
-+		goto fail;
-+	}
-+
-+	if (!dbus_connection_set_timeout_functions(
-+		    conn, dwl_dbus_add_timeout, dwl_dbus_remove_timeout,
-+		    dwl_dbus_adjust_timeout, loop, NULL)) {
-+		goto fail;
-+	}
-+
-+	bus_source = wl_event_loop_add_fd(loop, efd, WL_EVENT_READABLE, dwl_dbus_dispatch, conn);
++	bus_source = wl_event_loop_add_fd(loop, pipefd[0], WL_EVENT_READABLE,
++	                                  dwl_dbus_dispatch, conn);
 +	if (!bus_source)
 +		goto fail;
 +
-+	if (dbus_connection_get_dispatch_status(conn) == DBUS_DISPATCH_DATA_REMAINS)
-+		if (write(efd, &dispatch_pending, sizeof(uint64_t)) < 0)
-+			perror("write");
++	dbus_connection_set_dispatch_status_function(conn,
++	                                             dwl_dbus_dispatch_status,
++	                                             pipefd, close_pipe);
++	if (!dbus_connection_set_watch_functions(conn, dwl_dbus_add_watch,
++	                                         dwl_dbus_remove_watch, NULL,
++	                                         loop, NULL)) {
++		goto fail;
++	}
++	if (!dbus_connection_set_timeout_functions(conn, dwl_dbus_add_timeout,
++	                                           dwl_dbus_remove_timeout,
++	                                           NULL, loop, NULL)) {
++		goto fail;
++	}
++	if (dbus_connection_get_dispatch_status(conn) != DBUS_DISPATCH_COMPLETE)
++		if (write(pipefd[1], &pending, sizeof(int)) < 0)
++			goto fail;
 +
 +	return bus_source;
 +
 +fail:
 +	if (bus_source)
 +		wl_event_source_remove(bus_source);
-+	if (efd >= 0) {
-+		close(efd);
-+		efd = -1;
-+	}
-+	dbus_connection_set_timeout_functions(conn, NULL, NULL, NULL, NULL, NULL);
++	dbus_connection_set_timeout_functions(conn, NULL, NULL, NULL, NULL,
++	                                      NULL);
 +	dbus_connection_set_watch_functions(conn, NULL, NULL, NULL, NULL, NULL);
 +	dbus_connection_set_dispatch_status_function(conn, NULL, NULL, NULL);
 +
@@ -351,11 +355,9 @@ index 0000000..653a133
 +stopbus(DBusConnection *conn, struct wl_event_source *bus_source)
 +{
 +	wl_event_source_remove(bus_source);
-+	close(efd);
-+	efd = -1;
-+
 +	dbus_connection_set_watch_functions(conn, NULL, NULL, NULL, NULL, NULL);
-+	dbus_connection_set_timeout_functions(conn, NULL, NULL, NULL, NULL, NULL);
++	dbus_connection_set_timeout_functions(conn, NULL, NULL, NULL, NULL,
++	                                      NULL);
 +	dbus_connection_set_dispatch_status_function(conn, NULL, NULL, NULL);
 +}
 diff --git a/dbus.h b/dbus.h
@@ -375,7 +377,7 @@ index 0000000..b374b98
 +
 +#endif /* DWLDBUS_H */
 diff --git a/dwl.c b/dwl.c
-index ece537a..959cc50 100644
+index ece537a..7753ef6 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -1,6 +1,7 @@
@@ -429,7 +431,7 @@ index ece537a..959cc50 100644
  
 +static DBusConnection *bus_conn;
 +static struct wl_event_source *bus_source;
-+static Watcher watcher;
++static Watcher watcher = {.running = 0};
 +
  static const struct wlr_buffer_impl buffer_impl = {
      .destroy = bufdestroy,
@@ -453,20 +455,16 @@ index ece537a..959cc50 100644
  
  	wlr_idle_notifier_v1_notify_activity(idle_notifier, seat);
  
-@@ -750,17 +763,29 @@ buttonpress(struct wl_listener *listener, void *data)
- 		if (!c && !exclusive_focus &&
+@@ -751,6 +764,8 @@ buttonpress(struct wl_listener *listener, void *data)
  			(node = wlr_scene_node_at(&layers[LyrBottom]->node, cursor->x, cursor->y, NULL, NULL)) &&
  			(buffer = wlr_scene_buffer_from_node(node)) && buffer == selmon->scene_buffer) {
-+
  			cx = (cursor->x - selmon->m.x) * selmon->wlr_output->scale;
 +			traywidth = tray_get_width(selmon->tray);
 +
  			do
  				x += TEXTW(selmon, tags[i]);
  			while (cx >= x && ++i < LENGTH(tags));
-+
- 			if (i < LENGTH(tags)) {
- 				click = ClkTagBar;
+@@ -759,8 +774,16 @@ buttonpress(struct wl_listener *listener, void *data)
  				arg.ui = 1 << i;
  			} else if (cx < x + TEXTW(selmon, selmon->ltsymbol))
  				click = ClkLtSymbol;
@@ -484,7 +482,7 @@ index ece537a..959cc50 100644
  			} else
  				click = ClkTitle;
  		}
-@@ -774,7 +799,12 @@ buttonpress(struct wl_listener *listener, void *data)
+@@ -774,7 +797,12 @@ buttonpress(struct wl_listener *listener, void *data)
  		mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
  		for (b = buttons; b < END(buttons); b++) {
  			if (CLEANMASK(mods) == CLEANMASK(b->mod) && event->button == b->button && click == b->click && b->func) {
@@ -498,12 +496,14 @@ index ece537a..959cc50 100644
  				return;
  			}
  		}
-@@ -840,6 +870,12 @@ cleanup(void)
+@@ -840,6 +868,14 @@ cleanup(void)
  
  	destroykeyboardgroup(&kb_group->destroy, NULL);
  
-+	if (showbar && showsystray) {
++	if (watcher.running)
 +		watcher_stop(&watcher);
++
++	if (showbar && showsystray) {
 +		stopbus(bus_conn, bus_source);
 +		dbus_connection_unref(bus_conn);
 +	}
@@ -596,25 +596,23 @@ index ece537a..959cc50 100644
  void
  drawbars(void)
  {
-@@ -2818,6 +2889,17 @@ setup(void)
+@@ -2818,6 +2889,15 @@ setup(void)
  	status_event_source = wl_event_loop_add_fd(wl_display_get_event_loop(dpy),
  		STDIN_FILENO, WL_EVENT_READABLE, statusin, NULL);
  
-+	if (showbar && showsystray) {
-+		bus_conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
-+		if (!bus_conn)
-+			die("Failed to connect to bus");
-+		bus_source = startbus(bus_conn, event_loop);
-+		if (!bus_source)
-+			die("Failed to start listening to bus events");
-+		if (watcher_start(&watcher, bus_conn, event_loop) < 0)
-+			die("Failed to start tray watcher");
-+	}
++	bus_conn = dbus_bus_get(DBUS_BUS_SESSION, NULL);
++	if (!bus_conn)
++		die("Failed to connect to bus");
++	bus_source = startbus(bus_conn, event_loop);
++	if (!bus_source)
++		die("Failed to start listening to bus events");
++	if (showbar && showsystray)
++		watcher_start(&watcher, bus_conn, event_loop);
 +
  	/* Make sure XWayland clients don't connect to the parent X server,
  	 * e.g when running in the x11 backend or the wayland backend and the
  	 * compositor has Xwayland support */
-@@ -3160,6 +3242,7 @@ updatebar(Monitor *m)
+@@ -3160,6 +3240,7 @@ updatebar(Monitor *m)
  	size_t i;
  	int rw, rh;
  	char fontattrs[12];
@@ -622,7 +620,7 @@ index ece537a..959cc50 100644
  
  	wlr_output_transformed_resolution(m->wlr_output, &rw, &rh);
  	m->b.width = rw;
-@@ -3185,6 +3268,18 @@ updatebar(Monitor *m)
+@@ -3185,6 +3266,18 @@ updatebar(Monitor *m)
  	m->lrpad = m->drw->font->height;
  	m->b.height = m->drw->font->height + 2;
  	m->b.real_height = (int)((float)m->b.height / m->wlr_output->scale);
@@ -2424,10 +2422,10 @@ index 0000000..af4e5e3
 +#endif /* TRAY_H */
 diff --git a/systray/watcher.c b/systray/watcher.c
 new file mode 100644
-index 0000000..072ab86
+index 0000000..8dd84b9
 --- /dev/null
 +++ b/systray/watcher.c
-@@ -0,0 +1,549 @@
+@@ -0,0 +1,551 @@
 +#include "watcher.h"
 +
 +#include "item.h"
@@ -2908,20 +2906,21 @@ index 0000000..072ab86
 +static const DBusObjectPathVTable snw_vtable = { .message_function =
 +	                                                 snw_message_handler };
 +
-+int
++void
 +watcher_start(Watcher *watcher, DBusConnection *conn,
 +              struct wl_event_loop *loop)
 +{
 +	DBusError err = DBUS_ERROR_INIT;
-+	int r;
++	int r, flags;
 +
 +	wl_list_init(&watcher->items);
 +	wl_list_init(&watcher->trays);
 +	watcher->conn = conn;
 +	watcher->loop = loop;
 +
++	flags = DBUS_NAME_FLAG_REPLACE_EXISTING | DBUS_NAME_FLAG_DO_NOT_QUEUE;
 +	r = dbus_bus_request_name(conn, SNW_NAME,
-+	                          DBUS_NAME_FLAG_REPLACE_EXISTING, NULL);
++	                          flags, NULL);
 +	if (r != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER)
 +		goto fail;
 +
@@ -2945,13 +2944,13 @@ index 0000000..072ab86
 +		goto fail;
 +	}
 +
-+	dbus_error_free(&err);
-+	return 0;
++	watcher->running = 1;
++	return;
 +
 +fail:
 +	fprintf(stderr, "Couldn't start watcher, systray not available\n");
 +	dbus_error_free(&err);
-+	return -1;
++	return;
 +}
 +
 +void
@@ -2961,6 +2960,7 @@ index 0000000..072ab86
 +	dbus_bus_remove_match(watcher->conn, match_rule, NULL);
 +	dbus_connection_remove_filter(watcher->conn, filter_bus, watcher);
 +	dbus_bus_release_name(watcher->conn, SNW_NAME, NULL);
++	watcher->running = 0;
 +}
 +
 +int
@@ -2979,10 +2979,10 @@ index 0000000..072ab86
 +}
 diff --git a/systray/watcher.h b/systray/watcher.h
 new file mode 100644
-index 0000000..0178587
+index 0000000..127eb64
 --- /dev/null
 +++ b/systray/watcher.h
-@@ -0,0 +1,34 @@
+@@ -0,0 +1,35 @@
 +#ifndef WATCHER_H
 +#define WATCHER_H
 +
@@ -3007,9 +3007,10 @@ index 0000000..0178587
 +	struct wl_list trays;
 +	struct wl_event_loop *loop;
 +	DBusConnection *conn;
++	int running;
 +} Watcher;
 +
-+int watcher_start (Watcher *watcher, DBusConnection *conn,
++void watcher_start (Watcher *watcher, DBusConnection *conn,
 +                   struct wl_event_loop *loop);
 +void watcher_stop (Watcher *watcher);
 +
@@ -3018,5 +3019,5 @@ index 0000000..0178587
 +
 +#endif /* WATCHER_H */
 -- 
-2.48.1
+2.49.0
 
