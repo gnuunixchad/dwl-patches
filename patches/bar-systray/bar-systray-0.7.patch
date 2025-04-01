@@ -1,4 +1,4 @@
-From e40de8cb1f33ebd7978f7f7843aa94ee241cb55a Mon Sep 17 00:00:00 2001
+From cf228147250f4616d150fbe5276088c5f9969bba Mon Sep 17 00:00:00 2001
 From: vetu104 <vetu104@proton.me>
 Date: Sat, 29 Mar 2025 19:22:37 +0200
 Subject: [PATCH] Add a system tray next to sewn's bar
@@ -895,7 +895,7 @@ index 0000000..20f281b
 +#endif /* ICON_H */
 diff --git a/systray/item.c b/systray/item.c
 new file mode 100644
-index 0000000..8a13181
+index 0000000..4359a28
 --- /dev/null
 +++ b/systray/item.c
 @@ -0,0 +1,403 @@
@@ -995,7 +995,7 @@ index 0000000..8a13181
 +	} while (dbus_message_iter_next(iter));
 +
 +	/* return last index if desired not found */
-+	return i--;
++	return --i;
 +}
 +
 +static void
