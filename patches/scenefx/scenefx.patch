@@ -694,3 +694,7 @@ index 5bf995e..655e175 100644
  #ifdef XWAYLAND
  void
  activatex11(struct wl_listener *listener, void *data)
+-- 
+2.47.2
+
+
