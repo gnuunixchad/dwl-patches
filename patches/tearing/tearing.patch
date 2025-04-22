@@ -1,16 +1,16 @@
-From 66b2e1646bee8502a3715403c165015bd019438c Mon Sep 17 00:00:00 2001
+From c5216442cfb22eed7c2d4196f46c9ad8db3a5425 Mon Sep 17 00:00:00 2001
 From: korei999 <ju7t1xe@gmail.com>
-Date: Wed, 18 Sep 2024 20:11:22 +0300
+Date: Sun, 2 Feb 2025 13:44:41 +0200
 Subject: [PATCH] implement tearing protocol
 
 ---
  Makefile     |   5 +-
  config.def.h |   8 +++
- dwl.c        | 184 +++++++++++++++++++++++++++++++++++++++++++++++----
- 3 files changed, 182 insertions(+), 15 deletions(-)
+ dwl.c        | 176 +++++++++++++++++++++++++++++++++++++++++++++++----
+ 3 files changed, 174 insertions(+), 15 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 8db7409..6edc7d7 100644
+index 578194f..7d24970 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -21,7 +21,7 @@ dwl: dwl.o util.o
@@ -52,7 +52,7 @@ index 22d2171..52d38d3 100644
  static const Layout layouts[] = {
  	/* symbol     arrange function */
 diff --git a/dwl.c b/dwl.c
-index dc0c861..44be1bf 100644
+index 4816159..747e16f 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -51,6 +51,7 @@
@@ -63,9 +63,9 @@ index dc0c861..44be1bf 100644
  #include <wlr/types/wlr_viewporter.h>
  #include <wlr/types/wlr_virtual_keyboard_v1.h>
  #include <wlr/types/wlr_virtual_pointer_v1.h>
-@@ -90,6 +91,11 @@ enum { NetWMWindowTypeDialog, NetWMWindowTypeSplash, NetWMWindowTypeToolbar,
- 	NetWMWindowTypeUtility, NetLast }; /* EWMH atoms */
- #endif
+@@ -86,6 +87,11 @@ enum { CurNormal, CurPressed, CurMove, CurResize }; /* cursor */
+ enum { XDGShell, LayerShell, X11 }; /* client types */
+ enum { LyrBg, LyrBottom, LyrTile, LyrFloat, LyrTop, LyrFS, LyrOverlay, LyrBlock, NUM_LAYERS }; /* scene layers */
  
 +typedef struct ForceTearingRule {
 +	const char* title;
@@ -75,7 +75,7 @@ index dc0c861..44be1bf 100644
  typedef union {
  	int i;
  	uint32_t ui;
-@@ -143,6 +149,7 @@ typedef struct {
+@@ -139,6 +145,7 @@ typedef struct {
  	uint32_t tags;
  	int isfloating, isurgent, isfullscreen;
  	uint32_t resize; /* configure serial of a pending resize */
@@ -83,7 +83,7 @@ index dc0c861..44be1bf 100644
  } Client;
  
  typedef struct {
-@@ -243,6 +250,19 @@ typedef struct {
+@@ -239,6 +246,17 @@ typedef struct {
  	struct wl_listener destroy;
  } SessionLock;
  
@@ -91,8 +91,6 @@ index dc0c861..44be1bf 100644
 +	struct wlr_tearing_control_v1 *tearing_control;
 +	struct wl_listener set_hint;
 +	struct wl_listener destroy;
-+
-+	struct wl_list link; /* tearing_controllers */
 +} TearingController;
 +
 +typedef struct SendFrameDoneData {
@@ -103,17 +101,7 @@ index dc0c861..44be1bf 100644
  /* function declarations */
  static void applybounds(Client *c, struct wlr_box *bbox);
  static void applyrules(Client *c);
-@@ -293,6 +313,9 @@ static Client *focustop(Monitor *m);
- static void fullscreennotify(struct wl_listener *listener, void *data);
- static void gpureset(struct wl_listener *listener, void *data);
- static void handlesig(int signo);
-+static void handletearingcontrollersethint(struct wl_listener *listener, void *data);
-+static void handletearingcontrollerdestroy(struct wl_listener *listener, void *data);
-+static void handlenewtearinghint(struct wl_listener *listener, void *data);
- static void incnmaster(const Arg *arg);
- static void inputdevice(struct wl_listener *listener, void *data);
- static int keybinding(uint32_t mods, xkb_keysym_t sym);
-@@ -309,6 +332,7 @@ static void motionnotify(uint32_t time, struct wlr_input_device *device, double
+@@ -305,6 +323,7 @@ static void motionnotify(uint32_t time, struct wlr_input_device *device, double
  		double sy, double sx_unaccel, double sy_unaccel);
  static void motionrelative(struct wl_listener *listener, void *data);
  static void moveresize(const Arg *arg);
@@ -121,7 +109,7 @@ index dc0c861..44be1bf 100644
  static void outputmgrapply(struct wl_listener *listener, void *data);
  static void outputmgrapplyortest(struct wlr_output_configuration_v1 *config, int test);
  static void outputmgrtest(struct wl_listener *listener, void *data);
-@@ -323,6 +347,7 @@ static void requeststartdrag(struct wl_listener *listener, void *data);
+@@ -319,6 +338,7 @@ static void requeststartdrag(struct wl_listener *listener, void *data);
  static void requestmonstate(struct wl_listener *listener, void *data);
  static void resize(Client *c, struct wlr_box geo, int interact);
  static void run(char *startup_cmd);
@@ -129,26 +117,50 @@ index dc0c861..44be1bf 100644
  static void setcursor(struct wl_listener *listener, void *data);
  static void setcursorshape(struct wl_listener *listener, void *data);
  static void setfloating(Client *c, int floating);
-@@ -400,6 +425,10 @@ static struct wlr_scene_rect *locked_bg;
+@@ -333,6 +353,9 @@ static void spawn(const Arg *arg);
+ static void startdrag(struct wl_listener *listener, void *data);
+ static void tag(const Arg *arg);
+ static void tagmon(const Arg *arg);
++static void tearingcontrollersethint(struct wl_listener *listener, void *data);
++static void tearingcontrollerdestroy(struct wl_listener *listener, void *data);
++static void tearingnewhint(struct wl_listener *listener, void *data);
+ static void tile(Monitor *m);
+ static void togglefloating(const Arg *arg);
+ static void togglefullscreen(const Arg *arg);
+@@ -395,6 +418,8 @@ static struct wlr_session_lock_manager_v1 *session_lock_mgr;
+ static struct wlr_scene_rect *locked_bg;
  static struct wlr_session_lock_v1 *cur_lock;
- static struct wl_listener lock_listener = {.notify = locksession};
  
-+struct wlr_tearing_control_manager_v1 *tearing_control_v1;
-+struct wl_listener tearing_control_new_object;
-+struct wl_list tearing_controllers;
++static struct wlr_tearing_control_manager_v1 *tearing_control_v1;
 +
  static struct wlr_seat *seat;
  static KeyboardGroup *kb_group;
  static unsigned int cursor_mode;
-@@ -1510,6 +1539,69 @@ handlesig(int signo)
- 	}
+@@ -435,6 +460,7 @@ static struct wl_listener request_set_cursor_shape = {.notify = setcursorshape};
+ static struct wl_listener request_start_drag = {.notify = requeststartdrag};
+ static struct wl_listener start_drag = {.notify = startdrag};
+ static struct wl_listener new_session_lock = {.notify = locksession};
++static struct wl_listener tearing_control_new_object = {.notify = tearingnewhint};
+ 
+ #ifdef XWAYLAND
+ static void activatex11(struct wl_listener *listener, void *data);
+@@ -779,6 +805,7 @@ cleanuplisteners(void)
+ 	wl_list_remove(&request_start_drag.link);
+ 	wl_list_remove(&start_drag.link);
+ 	wl_list_remove(&new_session_lock.link);
++	wl_list_remove(&tearing_control_new_object.link);
+ #ifdef XWAYLAND
+ 	wl_list_remove(&new_xwayland_surface.link);
+ 	wl_list_remove(&xwayland_ready.link);
+@@ -1563,6 +1590,63 @@ handlesig(int signo)
+ 		quit(NULL);
  }
  
 +void
-+handletearingcontrollersethint(struct wl_listener *listener, void *data)
++tearingcontrollersethint(struct wl_listener *listener, void *data)
 +{
 +	Client *c = NULL, *i = NULL;
-+	struct TearingController *controller = wl_container_of(listener, controller, set_hint);
++	TearingController *controller = wl_container_of(listener, controller, set_hint);
 +
 +	struct wlr_xdg_surface *surface = wlr_xdg_surface_try_from_wlr_surface(controller->tearing_control->surface);
 +#ifdef XWAYLAND
@@ -177,40 +189,34 @@ index dc0c861..44be1bf 100644
 +}
 +
 +void
-+handletearingcontrollerdestroy(struct wl_listener *listener, void *data)
++tearingcontrollerdestroy(struct wl_listener *listener, void *data)
 +{
-+	struct TearingController *controller = wl_container_of(listener, controller, destroy);
++	TearingController *controller = wl_container_of(listener, controller, destroy);
 +
 +	wl_list_remove(&controller->set_hint.link);
 +	wl_list_remove(&controller->destroy.link);
-+	wl_list_remove(&controller->link);
 +	free(controller);
 +}
 +
 +void
-+handlenewtearinghint(struct wl_listener *listener, void *data)
++tearingnewhint(struct wl_listener *listener, void *data)
 +{
 +	struct wlr_tearing_control_v1 *tearing_control = data;
-+	struct TearingController *controller = calloc(1, sizeof(struct TearingController));
-+
-+	if (!controller)
-+		return;
++	TearingController *controller = ecalloc(1, sizeof(*controller));
 +
 +	controller->tearing_control = tearing_control;
-+	controller->set_hint.notify = handletearingcontrollersethint;
++
++	controller->set_hint.notify = tearingcontrollersethint;
 +	wl_signal_add(&tearing_control->events.set_hint, &controller->set_hint);
 +
-+	controller->destroy.notify = handletearingcontrollerdestroy;
++	controller->destroy.notify = tearingcontrollerdestroy;
 +	wl_signal_add(&tearing_control->events.destroy, &controller->destroy);
-+
-+	wl_list_init(&controller->link);
-+	wl_list_insert(&tearing_controllers, &controller->link);
 +}
 +
  void
  incnmaster(const Arg *arg)
  {
-@@ -1677,6 +1769,33 @@ locksession(struct wl_listener *listener, void *data)
+@@ -1730,6 +1814,35 @@ locksession(struct wl_listener *listener, void *data)
  	wlr_session_lock_v1_send_locked(session_lock);
  }
  
@@ -221,30 +227,32 @@ index dc0c861..44be1bf 100644
 +	const char* appid = client_get_appid(c);
 +	const char* title = client_get_title(c);
 +
-+	for (unsigned i = 0; i < LENGTH(force_tearing); i++) {
-+		if (appid)
++	for (unsigned i = 0; i < LENGTH(force_tearing); ++i) {
++		if (appid) {
 +			if (strcmp(force_tearing[i].appid, appid) == 0) {
 +				success = 1;
 +				break;
 +			}
++		}
 +
-+		if (title)
++		if (title) {
 +			if (strcmp(force_tearing[i].title, title) == 0) {
 +				success = 1;
 +				break;
 +			}
++		}
 +	}
 +
 +	if (success) {
 +		c->tearing_hint = WP_TEARING_CONTROL_V1_PRESENTATION_HINT_ASYNC;
-+		fprintf(stderr, "tearing forced for: appid: '%s', title: '%s'\n", appid, title);
++		fprintf(stderr, "Forcing tearing for appid: '%s', title: '%s'\n", appid, title);
 +	}
 +}
 +
  void
  mapnotify(struct wl_listener *listener, void *data)
  {
-@@ -1686,6 +1805,8 @@ mapnotify(struct wl_listener *listener, void *data)
+@@ -1739,6 +1852,8 @@ mapnotify(struct wl_listener *listener, void *data)
  	Monitor *m;
  	int i;
  
@@ -253,7 +261,7 @@ index dc0c861..44be1bf 100644
  	/* Create scene tree for this client and its border */
  	c->scene = client_surface(c)->data = wlr_scene_tree_create(layers[LyrTile]);
  	/* Enabled later by a call to arrange() */
-@@ -1924,6 +2045,13 @@ moveresize(const Arg *arg)
+@@ -1977,6 +2092,13 @@ moveresize(const Arg *arg)
  	}
  }
  
@@ -267,7 +275,7 @@ index dc0c861..44be1bf 100644
  void
  outputmgrapply(struct wl_listener *listener, void *data)
  {
-@@ -2093,27 +2221,40 @@ quit(const Arg *arg)
+@@ -2147,27 +2269,40 @@ quit(const Arg *arg)
  void
  rendermon(struct wl_listener *listener, void *data)
  {
@@ -322,7 +330,7 @@ index dc0c861..44be1bf 100644
  }
  
  void
-@@ -2237,6 +2378,16 @@ run(char *startup_cmd)
+@@ -2291,6 +2426,16 @@ run(char *startup_cmd)
  	wl_display_run(dpy);
  }
  
@@ -339,18 +347,16 @@ index dc0c861..44be1bf 100644
  void
  setcursor(struct wl_listener *listener, void *data)
  {
-@@ -2584,6 +2735,11 @@ setup(void)
- 	LISTEN_STATIC(&output_mgr->events.apply, outputmgrapply);
- 	LISTEN_STATIC(&output_mgr->events.test, outputmgrtest);
+@@ -2641,6 +2786,9 @@ setup(void)
+ 	wl_signal_add(&output_mgr->events.apply, &output_mgr_apply);
+ 	wl_signal_add(&output_mgr->events.test, &output_mgr_test);
  
 +	tearing_control_v1 = wlr_tearing_control_manager_v1_create(dpy, 1);
-+	tearing_control_new_object.notify = handlenewtearinghint;
 +	wl_signal_add(&tearing_control_v1->events.new_object, &tearing_control_new_object);
-+	wl_list_init(&tearing_controllers);
 +
  	/* Make sure XWayland clients don't connect to the parent X server,
  	 * e.g when running in the x11 backend or the wayland backend and the
  	 * compositor has Xwayland support */
 -- 
-2.46.0
+2.49.0
 
