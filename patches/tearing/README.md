@@ -12,6 +12,6 @@ static const ForceTearingRule force_tearing[] = {
 ```
 ### Download
 - [git branch](https://codeberg.org/korei999/dwl/src/branch/tearing)
-- [2024-09-18](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/tearing/tearing.patch)
+- [2025-04-22](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/tearing/tearing.patch)
 ### Authors
 - [korei999](https://codeberg.org/korei999)
