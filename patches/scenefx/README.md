@@ -49,7 +49,7 @@ static const struct blur_data blur_data = {
 
 ### Download
 
-- [git branch](https://codeberg.org/wochap/dwl/src/branch/v0.8-a/scenefx)
+- [git branch](https://codeberg.org/wochap/dwl/src/branch/v0.8-a/scenefx-b)
 
 - [0.8](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/scenefx/scenefx.patch)
 
