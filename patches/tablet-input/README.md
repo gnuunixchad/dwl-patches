@@ -16,7 +16,7 @@ There was discussion of this matter in [Issue #141](https://codeberg.org/dwl/dwl
 
 ### Download
 - [git branch](https://codeberg.org/fauxmight/dwl/src/branch/tablet-input)
-- [main 2025-01-01](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/tablet-input/tablet-input.patch)
+- [main 2025-05-18](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/tablet-input/tablet-input.patch)
 - [0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/tablet-input/tablet-input-0.7.patch)
 
 ### Authors
