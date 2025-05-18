@@ -207,7 +207,7 @@ index 4816159..e8d36ac 100644
  
  	cursor_shape_mgr = wlr_cursor_shape_manager_v1_create(dpy, 1);
  	wl_signal_add(&cursor_shape_mgr->events.request_set_shape, &request_set_cursor_shape);
-@@ -2704,6 +2785,156 @@ tagmon(const Arg *arg)
+@@ -2704,6 +2785,159 @@ tagmon(const Arg *arg)
  		setmon(sel, dirtomon(arg->i), 0);
  }
  
@@ -320,7 +320,10 @@ index 4816159..e8d36ac 100644
 +	if (event->updated_axes & WLR_TABLET_TOOL_AXIS_DISTANCE)
 +		wlr_tablet_v2_tablet_tool_notify_distance(tablet_tool, event->distance);
 +	if (event->updated_axes & (WLR_TABLET_TOOL_AXIS_TILT_X | WLR_TABLET_TOOL_AXIS_TILT_Y))
++       {
++       printf("DEBUGGING: In axis event handling\n");
 +		wlr_tablet_v2_tablet_tool_notify_tilt(tablet_tool, event->tilt_x, event->tilt_y);
++       }
 +	if (event->updated_axes & WLR_TABLET_TOOL_AXIS_ROTATION)
 +		wlr_tablet_v2_tablet_tool_notify_rotation(tablet_tool, event->rotation);
 +	if (event->updated_axes & WLR_TABLET_TOOL_AXIS_SLIDER)
