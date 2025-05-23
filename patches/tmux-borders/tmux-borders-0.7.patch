@@ -1,0 +1,394 @@
+From 7561af3d37179bf6b1de00741e65e0afcc6ec961 Mon Sep 17 00:00:00 2001
+From: kerberoge <sjoerdenjh@gmail.com>
+Date: Thu, 22 May 2025 20:34:32 +0200
+Subject: [PATCH 1/1] Created tmux-borders patch
+
+---
+ client.h |   6 ++
+ dwl.c    | 249 ++++++++++++++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 235 insertions(+), 20 deletions(-)
+
+diff --git a/client.h b/client.h
+index 42f225f..007ab7d 100644
+--- a/client.h
++++ b/client.h
+@@ -291,6 +291,12 @@ client_is_unmanaged(Client *c)
+ 	return 0;
+ }
+ 
++static inline int
++client_needs_borders(Client *c)
++{
++	return c->isfloating || !c->mon->lt[c->mon->sellt]->arrange;
++}
++
+ static inline void
+ client_notify_enter(struct wlr_surface *s, struct wlr_keyboard *kb)
+ {
+diff --git a/dwl.c b/dwl.c
+index a2711f6..5df3e68 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -191,6 +191,7 @@ struct Monitor {
+ 	struct wlr_output *wlr_output;
+ 	struct wlr_scene_output *scene_output;
+ 	struct wlr_scene_rect *fullscreen_bg; /* See createmon() for info */
++	struct wlr_scene_tree *borders, *fborders;
+ 	struct wl_listener frame;
+ 	struct wl_listener destroy;
+ 	struct wl_listener request_state;
+@@ -255,10 +256,12 @@ static void chvt(const Arg *arg);
+ static void checkidleinhibitor(struct wlr_surface *exclude);
+ static void cleanup(void);
+ static void cleanupmon(struct wl_listener *listener, void *data);
++static int clientindex(Monitor *m, Client *c);
+ static void closemon(Monitor *m);
+ static void commitlayersurfacenotify(struct wl_listener *listener, void *data);
+ static void commitnotify(struct wl_listener *listener, void *data);
+ static void commitpopup(struct wl_listener *listener, void *data);
++static int countclients(Monitor *m);
+ static void createdecoration(struct wl_listener *listener, void *data);
+ static void createidleinhibitor(struct wl_listener *listener, void *data);
+ static void createkeyboard(struct wlr_keyboard *keyboard);
+@@ -285,6 +288,10 @@ static void destroysessionlock(struct wl_listener *listener, void *data);
+ static void destroysessionmgr(struct wl_listener *listener, void *data);
+ static void destroykeyboardgroup(struct wl_listener *listener, void *data);
+ static Monitor *dirtomon(enum wlr_direction dir);
++static void drawborder(struct wlr_scene_tree *t,
++		int x, int y, int w, int h, const float c[static 4]);
++static void drawborders(Monitor *m);
++static void drawfborders(Monitor *m);
+ static void focusclient(Client *c, int lift);
+ static void focusmon(const Arg *arg);
+ static void focusstack(const Arg *arg);
+@@ -517,6 +524,10 @@ arrange(Monitor *m)
+ 
+ 	if (m->lt[m->sellt]->arrange)
+ 		m->lt[m->sellt]->arrange(m);
++
++	drawborders(m);
++	drawfborders(m);
++
+ 	motionnotify(0, NULL, 0, 0, 0, 0);
+ 	checkidleinhibitor(NULL);
+ }
+@@ -712,6 +723,11 @@ cleanupmon(struct wl_listener *listener, void *data)
+ 			wlr_layer_surface_v1_destroy(l->layer_surface);
+ 	}
+ 
++	if (m->borders)
++		wlr_scene_node_destroy(&m->borders->node);
++	if (m->fborders)
++		wlr_scene_node_destroy(&m->fborders->node);
++
+ 	wl_list_remove(&m->destroy.link);
+ 	wl_list_remove(&m->frame.link);
+ 	wl_list_remove(&m->link);
+@@ -725,6 +741,27 @@ cleanupmon(struct wl_listener *listener, void *data)
+ 	free(m);
+ }
+ 
++int
++clientindex(Monitor *m, Client *c)
++{
++	unsigned int i = 0;
++	Client *ci;
++
++	if (!c || m->lt[m->sellt]->arrange != tile)
++		return -1;
++
++	wl_list_for_each(ci, &clients, link) {
++		if (VISIBLEON(ci, m) && !ci->isfloating && !ci->isfullscreen) {
++			if (ci == c)
++				return i;
++			else
++				i++;
++		}
++	}
++
++	return -1;
++}
++
+ void
+ closemon(Monitor *m)
+ {
+@@ -849,6 +886,19 @@ commitpopup(struct wl_listener *listener, void *data)
+ 	wl_list_remove(&listener->link);
+ }
+ 
++int
++countclients(Monitor *m)
++{
++	unsigned int n = 0;
++	Client *c;
++
++	wl_list_for_each(c, &clients, link)
++		if (VISIBLEON(c, m) && !c->isfloating && !c->isfullscreen)
++			n++;
++
++	return n;
++}
++
+ void
+ createdecoration(struct wl_listener *listener, void *data)
+ {
+@@ -985,6 +1035,8 @@ createmon(struct wl_listener *listener, void *data)
+ 
+ 	m = wlr_output->data = ecalloc(1, sizeof(*m));
+ 	m->wlr_output = wlr_output;
++	m->borders = NULL;
++	m->fborders = NULL;
+ 
+ 	for (i = 0; i < LENGTH(m->layers); i++)
+ 		wl_list_init(&m->layers[i]);
+@@ -1336,6 +1388,135 @@ dirtomon(enum wlr_direction dir)
+ 	return selmon;
+ }
+ 
++void
++drawborder(struct wlr_scene_tree *t, int x, int y, int w, int h, const float c[static 4])
++{
++	struct wlr_scene_rect *r;
++
++	r = wlr_scene_rect_create(t, w, h, c);
++	wlr_scene_node_set_position(&r->node, x, y);
++}
++
++void
++drawborders(Monitor *m)
++{
++	int n, i;
++	int mw, tw, my = 0, ty = 0;
++
++	if (!m)
++		return;
++
++	if (m->borders) {
++		wlr_scene_node_destroy(&m->borders->node);
++		m->borders = NULL;
++	}
++
++	n = countclients(m);
++
++	if (!n || m->lt[m->sellt]->arrange != tile)
++		return;
++
++	m->borders = wlr_scene_tree_create(layers[LyrTile]);
++
++	if (m->nmaster > 0 && n > m->nmaster)
++		mw = (int)round(m->w.width * m->mfact - 0.5 * borderpx);
++	else if (n <= m->nmaster)
++		mw = m->w.width;
++	else
++		mw = 0;
++
++	if (mw > 0)
++		tw = m->w.width - mw - borderpx;
++	else
++		tw = m->w.width;
++
++	/* Vertical center line */
++	if (mw > 0 && mw < m->w.width)
++		drawborder(m->borders, m->w.x + mw, m->w.y, borderpx, m->w.height, bordercolor);
++
++	/* Lines between master clients */
++	for (i = 0; i < MIN(n, m->nmaster) - 1; i++) {
++		my += (m->w.height - my - borderpx * (MIN(n, m->nmaster) - i - 1))
++								/ (MIN(n, m->nmaster) - i);
++		drawborder(m->borders, m->w.x, m->w.y + my, mw, borderpx, bordercolor);
++		my += borderpx;
++	}
++
++	/* Lines between clients on the stack */
++	for (i = m->nmaster; i < n - 1; i++) {
++		ty += (m->w.height - ty - borderpx * (n - i - 1)) / (n - i);
++		drawborder(m->borders, m->m.x + (mw ? mw + borderpx : 0), m->w.y + ty,
++				tw, borderpx, bordercolor);
++		ty += borderpx;
++	}
++}
++
++void
++drawfborders(Monitor *m)
++{
++	Client *fc;
++	int n, cidx;
++	int mw, x, y, w, h;
++
++	if (!m)
++		return;
++
++	if (m->fborders) {
++		wlr_scene_node_destroy(&m->fborders->node);
++		m->fborders = NULL;
++	}
++
++	fc = focustop(m);
++	n = countclients(m);
++	cidx = clientindex(m, fc);
++
++	if (!n || cidx == -1)
++		return;
++
++	m->fborders = wlr_scene_tree_create(layers[LyrTile]);
++	mw = (int)round(m->w.width * m->mfact - 0.5 * borderpx);
++
++	if (m->nmaster == 1 && n == 2) {
++		/* Half vertical center line */
++		y = m->w.y + (cidx == 1 ? m->w.height / 2 : 0);
++		h = (int)round(0.5 * m->w.height);
++		drawborder(m->fborders, m->w.x + mw, y, borderpx, h, focuscolor);
++	} else if (m->nmaster == 2 && n == 2) {
++		/* Half horizontal center line */
++		x = m->w.x + (cidx == 1 ? m->w.width / 2 : 0);
++		y = m->w.y + (int)round(0.5 * m->w.height - 0.5 * borderpx);
++		w = (int)round(0.5 * m->w.width);
++		drawborder(m->fborders, x, y, w, borderpx, focuscolor);
++	} else {
++		if (m->nmaster && n > m->nmaster)
++			/* Vertical line next to client */
++			drawborder(m->fborders, m->w.x + mw, fc->geom.y,
++					borderpx, fc->geom.height, focuscolor);
++
++		if (n > m->nmaster && cidx < m->nmaster) {
++			/* Left half */
++			x = m->w.x;
++			w = mw + borderpx;
++		} else if (m->nmaster && cidx >= m->nmaster) {
++			/* Right half */
++			x = m->w.x + mw;
++			w = m->w.width - mw;
++		} else {
++			/* Full width */
++			x = m->w.x;
++			w = m->w.width;
++		}
++
++		if ((cidx > 0 && cidx < m->nmaster) || (cidx > m->nmaster))
++			/* Line above client */
++			drawborder(m->fborders, x, fc->geom.y - borderpx, w, borderpx, focuscolor);
++
++		if ((cidx < m->nmaster - 1) || (cidx >= m->nmaster && cidx < n - 1))
++			/* Line below client */
++			drawborder(m->fborders, x, fc->geom.y + fc->geom.height, w, borderpx, focuscolor);
++	}
++}
++
+ void
+ focusclient(Client *c, int lift)
+ {
+@@ -1393,6 +1574,9 @@ focusclient(Client *c, int lift)
+ 			client_activate_surface(old, 0);
+ 		}
+ 	}
++
++	if (c)
++		drawfborders(c->mon);
+ 	printstatus();
+ 
+ 	if (!c) {
+@@ -2193,15 +2377,20 @@ resize(Client *c, struct wlr_box geo, int interact)
+ 	applybounds(c, bbox);
+ 
+ 	/* Update scene-graph, including borders */
++	c->bw = client_needs_borders(c) ? borderpx : 0;
+ 	wlr_scene_node_set_position(&c->scene->node, c->geom.x, c->geom.y);
+ 	wlr_scene_node_set_position(&c->scene_surface->node, c->bw, c->bw);
+-	wlr_scene_rect_set_size(c->border[0], c->geom.width, c->bw);
+-	wlr_scene_rect_set_size(c->border[1], c->geom.width, c->bw);
+-	wlr_scene_rect_set_size(c->border[2], c->bw, c->geom.height - 2 * c->bw);
+-	wlr_scene_rect_set_size(c->border[3], c->bw, c->geom.height - 2 * c->bw);
+-	wlr_scene_node_set_position(&c->border[1]->node, 0, c->geom.height - c->bw);
+-	wlr_scene_node_set_position(&c->border[2]->node, 0, c->bw);
+-	wlr_scene_node_set_position(&c->border[3]->node, c->geom.width - c->bw, c->bw);
++	for (int i = 0; i < 4; i++)
++		wlr_scene_node_set_enabled(&c->border[i]->node, c->bw);
++	if (c->bw) {
++		wlr_scene_rect_set_size(c->border[0], c->geom.width, c->bw);
++		wlr_scene_rect_set_size(c->border[1], c->geom.width, c->bw);
++		wlr_scene_rect_set_size(c->border[2], c->bw, c->geom.height - 2 * c->bw);
++		wlr_scene_rect_set_size(c->border[3], c->bw, c->geom.height - 2 * c->bw);
++		wlr_scene_node_set_position(&c->border[1]->node, 0, c->geom.height - c->bw);
++		wlr_scene_node_set_position(&c->border[2]->node, 0, c->bw);
++		wlr_scene_node_set_position(&c->border[3]->node, c->geom.width - c->bw, c->bw);
++	}
+ 
+ 	/* this is a no-op if size hasn't changed */
+ 	c->resize = client_set_size(c, c->geom.width - 2 * c->bw,
+@@ -2359,8 +2548,13 @@ setlayout(const Arg *arg)
+ 		return;
+ 	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
+ 		selmon->sellt ^= 1;
++	else
++		return;
+ 	if (arg && arg->v)
+ 		selmon->lt[selmon->sellt] = (Layout *)arg->v;
++	if (selmon->lt[selmon->sellt ^ 1]->arrange == tile && !selmon->lt[selmon->sellt]->arrange)
++		/* Tiled -> floating, remove monitor borders and enable client borders */
++		tile(selmon);
+ 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, LENGTH(selmon->ltsymbol));
+ 	arrange(selmon);
+ 	printstatus();
+@@ -2692,31 +2886,46 @@ void
+ tile(Monitor *m)
+ {
+ 	unsigned int mw, my, ty;
+-	int i, n = 0;
++	int i, n;
+ 	Client *c;
++	struct wlr_box wb;
++	int borders = m->lt[m->sellt]->arrange == tile ? 1 : 0;
+ 
+-	wl_list_for_each(c, &clients, link)
+-		if (VISIBLEON(c, m) && !c->isfloating && !c->isfullscreen)
+-			n++;
++	n = countclients(m);
+ 	if (n == 0)
+ 		return;
+ 
+-	if (n > m->nmaster)
+-		mw = m->nmaster ? (int)roundf(m->w.width * m->mfact) : 0;
+-	else
++	if (n > m->nmaster && m->nmaster) {
++		mw = (int)round(m->w.width * m->mfact - (borders ? 0.5 * borderpx : 0));
++	} else if (m->nmaster)
+ 		mw = m->w.width;
++	else
++		mw = 0;
+ 	i = my = ty = 0;
+ 	wl_list_for_each(c, &clients, link) {
+ 		if (!VISIBLEON(c, m) || c->isfloating || c->isfullscreen)
+ 			continue;
+ 		if (i < m->nmaster) {
+-			resize(c, (struct wlr_box){.x = m->w.x, .y = m->w.y + my, .width = mw,
+-				.height = (m->w.height - my) / (MIN(n, m->nmaster) - i)}, 0);
+-			my += c->geom.height;
++			wb.x = m->w.x;
++			wb.y = m->w.y + my;
++			wb.width = mw;
++			if (borders)
++				wb.height = (m->w.height - my - borderpx * (MIN(n, m->nmaster) - i - 1))
++										/ (MIN(n, m->nmaster) - i);
++			else
++				wb.height = (m->w.height - my) / (MIN(n, m->nmaster) - i);
++			resize(c, wb, 0);
++			my += wb.height + (borders ? borderpx : 0);
+ 		} else {
+-			resize(c, (struct wlr_box){.x = m->w.x + mw, .y = m->w.y + ty,
+-				.width = m->w.width - mw, .height = (m->w.height - ty) / (n - i)}, 0);
+-			ty += c->geom.height;
++			wb.x = m->w.x + mw + (mw && borders ? borderpx : 0);
++			wb.y = m->w.y + ty;
++			wb.width = m->w.width - mw - (mw && borders ? borderpx : 0);
++			if (borders)
++				wb.height = (m->w.height - ty - borderpx * (n - i - 1)) / (n - i);
++			else
++				wb.height = (m->w.height - ty) / (n - i);
++			resize(c, wb, 0);
++			ty += wb.height + (borders ? borderpx : 0);
+ 		}
+ 		i++;
+ 	}
+-- 
+2.49.0
+
