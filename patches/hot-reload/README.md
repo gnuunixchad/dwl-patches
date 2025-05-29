@@ -18,6 +18,8 @@ Reloading the compositor will replace all functionality except for `main`, `setu
 Note that you're responsible yourself for reloading ressources like fonts, which may only get acquired once.
 A lot of components of dwl will also only get run on a trigger (the tiling for example).
 So not every change will be immediate.
+Furthermore, any patch adding more global state to dwl cannot currently be reloaded properly since
+we keep state in the cold part.
 
 #### Notes
 ##### reduce compile errors
@@ -33,7 +35,7 @@ Most of all dwl functionality is moved into a shared object file `dwl.so`, which
 
 ### Download
 - [0.7](/dwl/dwl-patches/raw/branch/main/patches/hot-reload/hot-reload-0.7.patch)
-- [main 2025-02-14](/dwl/dwl-patches/raw/branch/main/patches/hot-reload/hot-reload.patch)
+- [main 2025-05-30](/dwl/dwl-patches/raw/branch/main/patches/hot-reload/hot-reload.patch)
 - find the repo for the patch [here](/Sivecano/dwl/src/branch/hot-reload)
 ### Authors
 - [Sivecano](https://codeberg.org/Sivecano)

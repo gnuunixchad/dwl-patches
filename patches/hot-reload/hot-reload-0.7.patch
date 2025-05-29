@@ -1,4 +1,4 @@
-From caa1adaf02ab4f9a326761ade5d1346149bc7c59 Mon Sep 17 00:00:00 2001
+From 168456db2d9d2e1c6f1183b0ecc660b21ecb9271 Mon Sep 17 00:00:00 2001
 From: Sivecano <sivecano@gmail.com>
 Date: Sun, 26 Jan 2025 18:30:02 +0100
 Subject: [PATCH] redo hot-reloading in one file
@@ -12,7 +12,7 @@ Subject: [PATCH] redo hot-reloading in one file
  5 files changed, 351 insertions(+), 50 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 3358bae..70d3d0f 100644
+index 3358bae..e7ee9ff 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -13,13 +13,16 @@ DWLDEVCFLAGS = -g -pedantic -Wall -Wextra -Wdeclaration-after-statement \
@@ -28,7 +28,7 @@ index 3358bae..70d3d0f 100644
  dwl: dwl.o util.o
  	$(CC) dwl.o util.o $(DWLCFLAGS) $(LDFLAGS) $(LDLIBS) -o $@
 -dwl.o: dwl.c client.h config.h config.mk cursor-shape-v1-protocol.h \
-+dwl.o: dwl.c cursor-shape-v1-protocol.h \
++dwl.o: dwl.c config.mk cursor-shape-v1-protocol.h \
 +	pointer-constraints-unstable-v1-protocol.h wlr-layer-shell-unstable-v1-protocol.h \
 +	wlr-output-power-management-unstable-v1-protocol.h xdg-shell-protocol.h
 +dwl.so: dwl.c client.h config.h config.mk cursor-shape-v1-protocol.h \
@@ -766,5 +766,5 @@ index 226980d..11aab34 100644
 +struct listens* append_listener(struct wl_listener* l, struct listens* ls);
 +struct listens* remove_listener(struct wl_listener* l, struct listens* ls);
 -- 
-2.48.1
+2.49.0
 
