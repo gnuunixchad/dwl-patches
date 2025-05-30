@@ -1,4 +1,4 @@
-From 168456db2d9d2e1c6f1183b0ecc660b21ecb9271 Mon Sep 17 00:00:00 2001
+From 559c635056f23d55df3f83c12d1201a7328f648f Mon Sep 17 00:00:00 2001
 From: Sivecano <sivecano@gmail.com>
 Date: Sun, 26 Jan 2025 18:30:02 +0100
 Subject: [PATCH] redo hot-reloading in one file
@@ -99,7 +99,7 @@ index 22d2171..6e3dda1 100644
  	{ MODKEY,                    XKB_KEY_k,          focusstack,     {.i = -1} },
  	{ MODKEY,                    XKB_KEY_i,          incnmaster,     {.i = +1} },
 diff --git a/dwl.c b/dwl.c
-index def2562..7e059ad 100644
+index def2562..1c9ab67 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -1,6 +1,15 @@
@@ -652,7 +652,7 @@ index def2562..7e059ad 100644
 +        wlr_log(WLR_ERROR, "couldn't load new dwl module from %s", get_module_path());
 +
 +        if (fork() == 0)
-+            execl("/bin/env", "--", "Notify-send", "-u", "low",  "failed to reload dwl", NULL);
++            execl("/bin/env", "--", "notify-send", "-u", "low",  "failed to reload dwl", NULL);
 +        return;
 +    }
 +
