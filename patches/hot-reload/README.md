@@ -53,7 +53,7 @@ When adding new code there are some considerations to be made. Since dwl decorat
 C's macro system is a bit too powerful though and we use this to our advantage. We will repeatedly define and
 undefine a macro called `static` in order to replace the `static` keyword inside some sections.
 This allows us to do less refactoring and preserve a lot of the original patch compatability since we're only
-strategically adding lines.
+strategically adding lines. We're tring to be as minimally invasive as we can.
 As a general guide:
 * global state should be global for the cold part and `extern` in the cold part meaning it should be inside a block like this:
     ```C
@@ -90,10 +90,15 @@ Thus, we enclose them the same way we do functions:
 * enfore use of the `LISTEN_GLOBAL` and `UNLISTEN` macros (I know this sucks but what can I do, I need to get
 access to the callbacks somehow). So you want
     * `wl_list_remove(listener.link)` to become `UNLISTEN(listener)` and
-    * `wl_signal_add(event, global_listener)` to become `LISTEN_GLOBAL(event, global)listener`.
+    * `wl_signal_add(event, global_listener)` to become `LISTEN_GLOBAL(event, global_listener)`.
 * Make sure that any patch you're using also uses static everywhere.
-Note that you do not have to create additional such feature blocks most of the time (there's a huge
-`#ifdef HOT`-delimited codeblock at the bottom of dwl.c where all the function definitions go for example).
+* If a patch adds any config variables that are accessed in the cold part (i.e. probably `setup`),
+then you'll have to manually remove the `static` keyword from them.
+
+Note that usually you do not have to create the big `#ifdef` blocks yourself.
+There is for example already a huge `#ifdef HOT`-delimited codeblock at the bottom
+of dwl.c where all the function definitions go.
+
 If you have any troubles, feel free to reach out.
 
 ### Download
