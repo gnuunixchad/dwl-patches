@@ -1,4 +1,4 @@
-From d35683fbbdc287dcd23ee2b2182e6f8eedb24e86 Mon Sep 17 00:00:00 2001
+From 44ce31430dd7d2c0a6c1dc29534f22fb33b25bca Mon Sep 17 00:00:00 2001
 From: Sivecano <sivecano@gmail.com>
 Date: Sun, 26 Jan 2025 18:30:02 +0100
 Subject: [PATCH] redo hot-reloading in one file
@@ -6,10 +6,10 @@ Subject: [PATCH] redo hot-reloading in one file
 ---
  Makefile     |  19 +-
  config.def.h |   5 +-
- dwl.c        | 487 +++++++++++++++++++++++++++++++++++++++------------
+ dwl.c        | 484 +++++++++++++++++++++++++++++++++++++++------------
  util.c       |  34 ++++
  util.h       |   6 +
- 5 files changed, 433 insertions(+), 118 deletions(-)
+ 5 files changed, 433 insertions(+), 115 deletions(-)
 
 diff --git a/Makefile b/Makefile
 index 578194f..69c1b54 100644
@@ -99,7 +99,7 @@ index 22d2171..6e3dda1 100644
  	{ MODKEY,                    XKB_KEY_k,          focusstack,     {.i = -1} },
  	{ MODKEY,                    XKB_KEY_i,          incnmaster,     {.i = +1} },
 diff --git a/dwl.c b/dwl.c
-index 4816159..db300bd 100644
+index 4816159..70e99be 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -1,6 +1,15 @@
@@ -441,17 +441,16 @@ index 4816159..db300bd 100644
  #endif
  }
  
-@@ -908,8 +1040,7 @@ commitpopup(struct wl_listener *listener, void *data)
+@@ -908,7 +1040,7 @@ commitpopup(struct wl_listener *listener, void *data)
  	box.x -= (type == LayerShell ? l->scene->node.x : c->geom.x);
  	box.y -= (type == LayerShell ? l->scene->node.y : c->geom.y);
  	wlr_xdg_popup_unconstrain_from_box(popup, &box);
 -	wl_list_remove(&listener->link);
--	free(listener);
 +	UNLISTEN(listener);
+ 	free(listener);
  }
  
- void
-@@ -1239,8 +1370,8 @@ destroydecoration(struct wl_listener *listener, void *data)
+@@ -1239,8 +1371,8 @@ destroydecoration(struct wl_listener *listener, void *data)
  {
  	Client *c = wl_container_of(listener, c, destroy_decoration);
  
@@ -462,27 +461,25 @@ index 4816159..db300bd 100644
  }
  
  void
-@@ -1249,8 +1380,7 @@ destroydragicon(struct wl_listener *listener, void *data)
+@@ -1249,7 +1381,7 @@ destroydragicon(struct wl_listener *listener, void *data)
  	/* Focus enter isn't sent during drag, so refocus the focused node. */
  	focusclient(focustop(selmon), 1);
  	motionnotify(0, NULL, 0, 0, 0, 0);
 -	wl_list_remove(&listener->link);
--	free(listener);
 +	UNLISTEN(listener);
+ 	free(listener);
  }
  
- void
-@@ -1259,8 +1389,7 @@ destroyidleinhibitor(struct wl_listener *listener, void *data)
+@@ -1259,7 +1391,7 @@ destroyidleinhibitor(struct wl_listener *listener, void *data)
  	/* `data` is the wlr_surface of the idle inhibitor being destroyed,
  	 * at this point the idle inhibitor is still in the list of the manager */
  	checkidleinhibitor(wlr_surface_get_root_surface(data));
 -	wl_list_remove(&listener->link);
--	free(listener);
 +	UNLISTEN(listener);
+ 	free(listener);
  }
  
- void
-@@ -1269,9 +1398,9 @@ destroylayersurfacenotify(struct wl_listener *listener, void *data)
+@@ -1269,9 +1401,9 @@ destroylayersurfacenotify(struct wl_listener *listener, void *data)
  	LayerSurface *l = wl_container_of(listener, l, destroy);
  
  	wl_list_remove(&l->link);
@@ -495,7 +492,7 @@ index 4816159..db300bd 100644
  	wlr_scene_node_destroy(&l->scene->node);
  	wlr_scene_node_destroy(&l->popups->node);
  	free(l);
-@@ -1290,9 +1419,9 @@ destroylock(SessionLock *lock, int unlock)
+@@ -1290,9 +1422,9 @@ destroylock(SessionLock *lock, int unlock)
  	motionnotify(0, NULL, 0, 0, 0, 0);
  
  destroy:
@@ -508,7 +505,7 @@ index 4816159..db300bd 100644
  
  	wlr_scene_node_destroy(&lock->scene->node);
  	cur_lock = NULL;
-@@ -1306,7 +1435,7 @@ destroylocksurface(struct wl_listener *listener, void *data)
+@@ -1306,7 +1438,7 @@ destroylocksurface(struct wl_listener *listener, void *data)
  	struct wlr_session_lock_surface_v1 *surface, *lock_surface = m->lock_surface;
  
  	m->lock_surface = NULL;
@@ -517,7 +514,7 @@ index 4816159..db300bd 100644
  
  	if (lock_surface->surface != seat->keyboard_state.focused_surface)
  		return;
-@@ -1326,23 +1455,23 @@ destroynotify(struct wl_listener *listener, void *data)
+@@ -1326,23 +1458,23 @@ destroynotify(struct wl_listener *listener, void *data)
  {
  	/* Called when the xdg_toplevel is destroyed. */
  	Client *c = wl_container_of(listener, c, destroy);
@@ -553,7 +550,7 @@ index 4816159..db300bd 100644
  	}
  	free(c);
  }
-@@ -1357,7 +1486,7 @@ destroypointerconstraint(struct wl_listener *listener, void *data)
+@@ -1357,7 +1489,7 @@ destroypointerconstraint(struct wl_listener *listener, void *data)
  		active_constraint = NULL;
  	}
  
@@ -562,7 +559,7 @@ index 4816159..db300bd 100644
  	free(pointer_constraint);
  }
  
-@@ -1373,9 +1502,9 @@ destroykeyboardgroup(struct wl_listener *listener, void *data)
+@@ -1373,9 +1505,9 @@ destroykeyboardgroup(struct wl_listener *listener, void *data)
  {
  	KeyboardGroup *group = wl_container_of(listener, group, destroy);
  	wl_event_source_remove(group->key_repeat_source);
@@ -575,7 +572,7 @@ index 4816159..db300bd 100644
  	wlr_keyboard_group_destroy(group->wlr_group);
  	free(group);
  }
-@@ -1541,8 +1670,8 @@ gpureset(struct wl_listener *listener, void *data)
+@@ -1541,8 +1673,8 @@ gpureset(struct wl_listener *listener, void *data)
  	if (!(alloc = wlr_allocator_autocreate(backend, drw)))
  		die("couldn't recreate allocator");
  
@@ -586,7 +583,7 @@ index 4816159..db300bd 100644
  
  	wlr_compositor_set_renderer(compositor, drw);
  
-@@ -2232,6 +2361,8 @@ resize(Client *c, struct wlr_box geo, int interact)
+@@ -2232,6 +2364,8 @@ resize(Client *c, struct wlr_box geo, int interact)
  	wlr_scene_subsurface_tree_set_clip(&c->scene_surface->node, &clip);
  }
  
@@ -595,7 +592,7 @@ index 4816159..db300bd 100644
  void
  run(char *startup_cmd)
  {
-@@ -2271,11 +2402,11 @@ run(char *startup_cmd)
+@@ -2271,11 +2405,11 @@ run(char *startup_cmd)
  	if (fd_set_nonblock(STDOUT_FILENO) < 0)
  		close(STDOUT_FILENO);
  
@@ -609,7 +606,7 @@ index 4816159..db300bd 100644
  
  	/* TODO hack to get cursor to display in its initial location (100, 100)
  	 * instead of (0, 0) and then jumping. still may not be fully
-@@ -2291,6 +2422,9 @@ run(char *startup_cmd)
+@@ -2291,6 +2425,9 @@ run(char *startup_cmd)
  	wl_display_run(dpy);
  }
  
@@ -619,7 +616,7 @@ index 4816159..db300bd 100644
  void
  setcursor(struct wl_listener *listener, void *data)
  {
-@@ -2437,17 +2571,19 @@ setsel(struct wl_listener *listener, void *data)
+@@ -2437,17 +2574,19 @@ setsel(struct wl_listener *listener, void *data)
  	wlr_seat_set_selection(seat, event->source, event->serial);
  }
  
@@ -641,7 +638,7 @@ index 4816159..db300bd 100644
  
  	/* The Wayland display is managed by libwayland. It handles accepting
  	 * clients from the Unix socket, manging Wayland globals, and so on. */
-@@ -2463,7 +2599,7 @@ setup(void)
+@@ -2463,7 +2602,7 @@ setup(void)
  
  	/* Initialize the scene graph used to lay out windows */
  	scene = wlr_scene_create();
@@ -650,7 +647,7 @@ index 4816159..db300bd 100644
  	for (i = 0; i < NUM_LAYERS; i++)
  		layers[i] = wlr_scene_tree_create(&scene->tree);
  	drag_icon = wlr_scene_tree_create(&scene->tree);
-@@ -2475,7 +2611,7 @@ setup(void)
+@@ -2475,7 +2614,7 @@ setup(void)
  	 * supports for shared memory, this configures that for clients. */
  	if (!(drw = wlr_renderer_autocreate(backend)))
  		die("couldn't create renderer");
@@ -659,7 +656,7 @@ index 4816159..db300bd 100644
  
  	/* Create shm, drm and linux_dmabuf interfaces by ourselves.
  	 * The simplest way is call:
-@@ -2522,24 +2658,24 @@ setup(void)
+@@ -2522,24 +2661,24 @@ setup(void)
  
  	/* Initializes the interface used to implement urgency hints */
  	activation = wlr_xdg_activation_v1_create(dpy);
@@ -688,7 +685,7 @@ index 4816159..db300bd 100644
  
  	/* Set up our client lists, the xdg-shell and the layer-shell. The xdg-shell is a
  	 * Wayland protocol which is used for application windows. For more
-@@ -2551,19 +2687,19 @@ setup(void)
+@@ -2551,19 +2690,19 @@ setup(void)
  	wl_list_init(&fstack);
  
  	xdg_shell = wlr_xdg_shell_create(dpy, 6);
@@ -713,7 +710,7 @@ index 4816159..db300bd 100644
  	locked_bg = wlr_scene_rect_create(layers[LyrBlock], sgeom.width, sgeom.height,
  			(float [4]){0.1f, 0.1f, 0.1f, 1.0f});
  	wlr_scene_node_set_enabled(&locked_bg->node, 0);
-@@ -2573,10 +2709,10 @@ setup(void)
+@@ -2573,10 +2712,10 @@ setup(void)
  			wlr_server_decoration_manager_create(dpy),
  			WLR_SERVER_DECORATION_MANAGER_MODE_SERVER);
  	xdg_decoration_mgr = wlr_xdg_decoration_manager_v1_create(dpy);
@@ -726,7 +723,7 @@ index 4816159..db300bd 100644
  
  	relative_pointer_mgr = wlr_relative_pointer_manager_v1_create(dpy);
  
-@@ -2604,14 +2740,14 @@ setup(void)
+@@ -2604,14 +2743,14 @@ setup(void)
  	 *
  	 * And more comments are sprinkled throughout the notify functions above.
  	 */
@@ -747,7 +744,7 @@ index 4816159..db300bd 100644
  
  	/*
  	 * Configures a seat, which is a single "seat" at which a user sits and
-@@ -2619,27 +2755,27 @@ setup(void)
+@@ -2619,27 +2758,27 @@ setup(void)
  	 * pointer, touch, and drawing tablet device. We also rig up a listener to
  	 * let us know when new input devices are available on the backend.
  	 */
@@ -788,7 +785,7 @@ index 4816159..db300bd 100644
  
  	/* Make sure XWayland clients don't connect to the parent X server,
  	 * e.g when running in the x11 backend or the wayland backend and the
-@@ -2651,8 +2787,8 @@ setup(void)
+@@ -2651,8 +2790,8 @@ setup(void)
  	 * It will be started when the first X client is started.
  	 */
  	if ((xwayland = wlr_xwayland_create(dpy, compositor, 1))) {
@@ -799,7 +796,7 @@ index 4816159..db300bd 100644
  
  		setenv("DISPLAY", xwayland->display_name, 1);
  	} else {
-@@ -2661,6 +2797,9 @@ setup(void)
+@@ -2661,6 +2800,9 @@ setup(void)
  #endif
  }
  
@@ -809,7 +806,7 @@ index 4816159..db300bd 100644
  void
  spawn(const Arg *arg)
  {
-@@ -3142,8 +3281,8 @@ void
+@@ -3142,8 +3284,8 @@ void
  dissociatex11(struct wl_listener *listener, void *data)
  {
  	Client *c = wl_container_of(listener, c, dissociate);
@@ -820,7 +817,7 @@ index 4816159..db300bd 100644
  }
  
  void
-@@ -3178,17 +3317,141 @@ xwaylandready(struct wl_listener *listener, void *data)
+@@ -3178,17 +3320,141 @@ xwaylandready(struct wl_listener *listener, void *data)
  }
  #endif
  
@@ -963,7 +960,7 @@ index 4816159..db300bd 100644
  		else if (c == 'v')
  			die("dwl " VERSION);
  		else
-@@ -3208,3 +3471,5 @@ main(int argc, char *argv[])
+@@ -3208,3 +3474,5 @@ main(int argc, char *argv[])
  usage:
  	die("Usage: %s [-v] [-d] [-s startup command]", argv[0]);
  }
