@@ -7,6 +7,7 @@ This patch replaces the window borders of tiled windows with borders that are si
 ![three clients](screenshot2.png)
 
 ### Download
+- [git branch](/kerberoge/dwl/src/branch/tmux-borders) 
 - [0.7](/dwl/dwl-patches/raw/branch/main/patches/tmux-borders/tmux-borders-0.7.patch)
 
 ### Authors
