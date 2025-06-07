@@ -1,4 +1,4 @@
-From 8a9726ece917ea824f5f0813ddabb796a315f52e Mon Sep 17 00:00:00 2001
+From e94f4b8363f4122f9b00f774a5b541a00c49fd35 Mon Sep 17 00:00:00 2001
 From: MayOrMayNotBeACat <maybeacat804@gmail.com>
 Date: Fri, 6 Jun 2025 22:42:16 -0400
 Subject: [PATCH] Allow initial layout to be set per tag.
@@ -9,14 +9,14 @@ Subject: [PATCH] Allow initial layout to be set per tag.
  2 files changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/config.def.h b/config.def.h
-index 22d2171..1bae97c 100644
+index 22d2171..8f2fade 100644
 --- a/config.def.h
 +++ b/config.def.h
 @@ -16,6 +16,7 @@ static const float fullscreen_bg[]         = {0.1f, 0.1f, 0.1f, 1.0f}; /* You ca
  
  /* tagging - TAGCOUNT must be no greater than 31 */
  #define TAGCOUNT (9)
-+static int tag_layout[TAGCOUNT] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
++static int tag_layout[TAGCOUNT] = {0, 0, 0, 0, 0, 0, 0, 0, 0}; /* Modify as needed to match TAGCOUNT */
  
  /* logging */
  static int log_level = WLR_ERROR;
