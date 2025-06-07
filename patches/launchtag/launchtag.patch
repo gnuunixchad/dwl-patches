@@ -1,4 +1,4 @@
-From fb953df35b2641661e99a35dc294e44442ec3a36 Mon Sep 17 00:00:00 2001
+From 8a9726ece917ea824f5f0813ddabb796a315f52e Mon Sep 17 00:00:00 2001
 From: MayOrMayNotBeACat <maybeacat804@gmail.com>
 Date: Fri, 6 Jun 2025 22:42:16 -0400
 Subject: [PATCH] Allow initial layout to be set per tag.
@@ -21,7 +21,7 @@ index 22d2171..1bae97c 100644
  /* logging */
  static int log_level = WLR_ERROR;
 diff --git a/dwl.c b/dwl.c
-index d234cd2..4c582f3 100644
+index d234cd2..da46816 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -1045,11 +1045,18 @@ createmon(struct wl_listener *listener, void *data)
@@ -37,8 +37,8 @@ index d234cd2..4c582f3 100644
  		m->pertag->sellts[i] = m->sellt;
  	}
  
-+	m->lt[0] = m->pertag->ltidxs[0][0];
-+	m->lt[1] = m->pertag->ltidxs[0][1];
++	m->lt[0] = m->pertag->ltidxs[1][0];
++	m->lt[1] = m->pertag->ltidxs[1][1];
 +	strncpy(m->ltsymbol, m->pertag->ltidxs[1][0]->symbol, LENGTH(m->ltsymbol));
 +
  	/* The xdg-protocol specifies:
