@@ -7,7 +7,7 @@ Behavior feels very intuitive as it doesn't disrupt existing masters no matter t
 
 ### Download
 - [git branch](https://codeberg.org/nikitaivanov/dwl/src/branch/attachtop)
-- [2024-04-23](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/attachtop/attachtop.patch)
+- [2025-06-16](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/attachtop/attachtop.patch)
 
 ### Authors
 - [Nikita Ivanov](https://codeberg.org/nikitaivanov)
