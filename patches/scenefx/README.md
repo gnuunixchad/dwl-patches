@@ -51,7 +51,7 @@ static const struct blur_data blur_data = {
 
 - [git branch](https://codeberg.org/wochap/dwl/src/branch/v0.8-a/scenefx-b)
 
-- [0.8](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/scenefx/scenefx.patch)
+- [0.8-dev](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/scenefx/scenefx.patch)
 
   **NOTE:** This patch was tested with the `87c0e8b6d5c86557a800445e8e4c322f387fe19c` commit on the `main` branch of `SceneFX`. It supports rounded borders, blur, and shadows. However, it does not add rounded borders or shadows to Xwayland apps. That said, Xwayland apps can have shadows, and they might also support rounded borders, but I was never able to make it work. PRs are welcome!
 
