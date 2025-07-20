@@ -1,0 +1,54 @@
+From de12135909af843ec0c3cdcf245c119ae3b22e60 Mon Sep 17 00:00:00 2001
+From: Olivier Warin <wasto@gmx.ch>
+Date: Sun, 20 Jul 2025 11:42:49 +0200
+Subject: [PATCH] killunsel
+
+---
+ config.def.h |  1 +
+ dwl.c        | 11 +++++++++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/config.def.h b/config.def.h
+index 95c2afa..491d94b 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -136,6 +136,7 @@ static const Key keys[] = {
+ 	{ MODKEY,                    XKB_KEY_Return,     zoom,           {0} },
+ 	{ MODKEY,                    XKB_KEY_Tab,        view,           {0} },
+ 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_C,          killclient,     {0} },
++	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_X,          killunsel,      {0} },
+ 	{ MODKEY,                    XKB_KEY_t,          setlayout,      {.v = &layouts[0]} },
+ 	{ MODKEY,                    XKB_KEY_f,          setlayout,      {.v = &layouts[1]} },
+ 	{ MODKEY,                    XKB_KEY_m,          setlayout,      {.v = &layouts[2]} },
+diff --git a/dwl.c b/dwl.c
+index 12f441e..a4285b3 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -296,6 +296,7 @@ static void keypress(struct wl_listener *listener, void *data);
+ static void keypressmod(struct wl_listener *listener, void *data);
+ static int keyrepeat(void *data);
+ static void killclient(const Arg *arg);
++static void killunsel(const Arg *arg);
+ static void locksession(struct wl_listener *listener, void *data);
+ static void mapnotify(struct wl_listener *listener, void *data);
+ static void maximizenotify(struct wl_listener *listener, void *data);
+@@ -1709,6 +1710,16 @@ killclient(const Arg *arg)
+ 		client_send_close(sel);
+ }
+ 
++void killunsel(const Arg *arg)
++{
++   Client *c;
++   wl_list_for_each(c, &clients, link)
++   {
++		 	if (c != focustop(selmon) && VISIBLEON(c, selmon))
++					client_send_close(c);
++   }
++}
++
+ void
+ locksession(struct wl_listener *listener, void *data)
+ {
+-- 
+2.50.1
+
