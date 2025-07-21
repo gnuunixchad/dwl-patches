@@ -5,7 +5,7 @@
 
 
 ### Download
-- [2025-07-20](/dwl/dwl-patches/raw/branch/main/patches/killunsel/killunsel.patch)
+- [main 2025-07-20](/dwl/dwl-patches/raw/branch/main/patches/killunsel/killunsel.patch)
 
 ### Author
 - [oli4warin](https://codeberg.org/oli4warin)
