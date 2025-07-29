@@ -13,6 +13,7 @@ slstatus -s | dwl
 * pixman
 
 ### Download
+- [main 2025-07-29](/dwl/dwl-patches/raw/branch/main/patches/bar/bar.patch)
 - [0.7](/dwl/dwl-patches/raw/branch/main/patches/bar/bar-0.7.patch)
 - [0.6](/dwl/dwl-patches/raw/branch/main/patches/bar/bar-0.6.patch)
 
