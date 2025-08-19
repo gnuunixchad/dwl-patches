@@ -1,4 +1,4 @@
-From 2cb4d057e471059f1ad5bc9911ce055c55f67cf4 Mon Sep 17 00:00:00 2001
+From 755b240596146d86f5850e6c589982cb5ed1d28e Mon Sep 17 00:00:00 2001
 From: Zuki Air <zukirust@gmail.com>
 Date: Thu, 7 Aug 2025 13:19:59 +0100
 Subject: [PATCH] riverctl patch
@@ -8,10 +8,10 @@ Subject: [PATCH] riverctl patch
  Makefile                                |  22 +-
  config.def.h                            |  36 +-
  dwl.c                                   |  47 +-
- dwlctl.c                                | 132 +++++
+ dwlctl.c                                | 133 +++++
  protocols/river-control-unstable-v1.xml |  85 +++
  river-control.h                         | 753 ++++++++++++++++++++++++
- 7 files changed, 1054 insertions(+), 22 deletions(-)
+ 7 files changed, 1055 insertions(+), 22 deletions(-)
  create mode 100644 dwlctl.c
  create mode 100644 protocols/river-control-unstable-v1.xml
  create mode 100644 river-control.h
@@ -250,10 +250,10 @@ index 12f441e..a064dcf 100644
  		if (c == 's')
 diff --git a/dwlctl.c b/dwlctl.c
 new file mode 100644
-index 0000000..3db6fbf
+index 0000000..4d99ae6
 --- /dev/null
 +++ b/dwlctl.c
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,133 @@
 +#include <stdio.h>
 +#include <stdlib.h>
 +#include <string.h>
@@ -272,9 +272,6 @@ index 0000000..3db6fbf
 +bool loop = true;
 +char** argv;
 +int argc;
-+
-+static void noop () {}
-+
 +
 +static void callback_failure(void *data,
 +			struct zriver_command_callback_v1 *zriver_command_callback_v1,
@@ -345,9 +342,13 @@ index 0000000..3db6fbf
 +	.done = sync_handle_done,
 +};
 +
++static void registry_handle_global_remove(void *, struct wl_registry *, uint32_t) {
++    /* this does nothing but handles global remove to prevent issues */
++}
++
 +static const struct wl_registry_listener registry_listener = {
 +	.global        = registry_handle_global,
-+	.global_remove = noop
++	.global_remove = registry_handle_global_remove
 +};
 +
 +static bool init_wayland (void) {
