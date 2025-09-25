@@ -37,8 +37,9 @@ If you target the unstable `main` branch, specify that in the `Download` link on
 	   ^^^ "0.7" is an example. Use the release that your patch targets
 	- [main YYYY-MM-DD](/dwl/dwl-patches/raw/branch/main/patches/PATCHNAME/PATCHNAME.patch)
 	        ^^^^^^^^^^ Patches targeting the unstable "main" branch include a YYYY-MM-DD indicator
-    ### Authors - latest at top [Codeberg nick is mandatory; other contact methods optional]
+    ### Authors - latest at top
     - [YOUR_NICK](https://codeberg.org/USERNAME)
+       ^^^^^^^^^  Codeberg nick is mandatory; other contact methods optional
       your_email@if_you_wish_to.share.it
       your_irc_nick at [Libera IRC dwl channel](https://web.libera.chat/?channels=#dwl)
       your_discord_handle at [dwl Discord](https://discord.gg/jJxZnrGPWN)
