@@ -1,4 +1,4 @@
-From 755b240596146d86f5850e6c589982cb5ed1d28e Mon Sep 17 00:00:00 2001
+From 735440660fd2bccdde982f9c3d758e189ba35e40 Mon Sep 17 00:00:00 2001
 From: Zuki Air <zukirust@gmail.com>
 Date: Thu, 7 Aug 2025 13:19:59 +0100
 Subject: [PATCH] riverctl patch
@@ -250,7 +250,7 @@ index 12f441e..a064dcf 100644
  		if (c == 's')
 diff --git a/dwlctl.c b/dwlctl.c
 new file mode 100644
-index 0000000..4d99ae6
+index 0000000..bb54071
 --- /dev/null
 +++ b/dwlctl.c
 @@ -0,0 +1,133 @@
@@ -342,7 +342,7 @@ index 0000000..4d99ae6
 +	.done = sync_handle_done,
 +};
 +
-+static void registry_handle_global_remove(void *, struct wl_registry *, uint32_t) {
++static void registry_handle_global_remove(void *a, struct wl_registry *b, uint32_t c) {
 +    /* this does nothing but handles global remove to prevent issues */
 +}
 +
