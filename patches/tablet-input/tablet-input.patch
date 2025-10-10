@@ -1,14 +1,13 @@
-From dd0abf07f9f3e456428b07e442b87578128da310 Mon Sep 17 00:00:00 2001
-From: A Frederick Christensen <dwl@ivories.org>
-Date: Sat, 17 May 2025 23:26:15 -0500
-Subject: [PATCH] Add tablet input
+From f639289974285207be396eac085cce6a316294c0 Mon Sep 17 00:00:00 2001
+From: Fernando Otto <fernandootto369@gmail.com>
+Date: Tue, 14 Oct 2025 12:20:37 -0300
+Subject: [PATCH] Fixing disconnect with the graphics tablet
 
-Signed-off-by: Aldrik Dunbar <aldrik@gmail.com>
 ---
  Makefile     |   6 +-
  config.def.h |   1 +
- dwl.c        | 238 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 244 insertions(+), 1 deletion(-)
+ dwl.c        | 240 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 246 insertions(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
 index 578194f..e0d1835 100644
@@ -47,7 +46,7 @@ index 95c2afa..1f06356 100644
  static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
  static const unsigned int borderpx         = 1;  /* border pixel of windows */
 diff --git a/dwl.c b/dwl.c
-index 12f441e..1f3b325 100644
+index 12f441e..43566fe 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -51,6 +51,9 @@
@@ -146,13 +145,15 @@ index 12f441e..1f3b325 100644
  void
  cursorconstrain(struct wlr_pointer_constraint_v1 *constraint)
  {
-@@ -1383,6 +1430,27 @@ destroykeyboardgroup(struct wl_listener *listener, void *data)
+@@ -1383,6 +1430,29 @@ destroykeyboardgroup(struct wl_listener *listener, void *data)
  	free(group);
  }
  
 +void
 +destroytablet(struct wl_listener *listener, void *data)
 +{
++  wl_list_remove(&tablet_device_destroy.link);
++  wlr_cursor_detach_input_device(cursor, tablet->wlr_device);
 +	tablet = NULL;
 +}
 +
@@ -174,7 +175,7 @@ index 12f441e..1f3b325 100644
  Monitor *
  dirtomon(enum wlr_direction dir)
  {
-@@ -1590,6 +1658,12 @@ inputdevice(struct wl_listener *listener, void *data)
+@@ -1590,6 +1660,12 @@ inputdevice(struct wl_listener *listener, void *data)
  	case WLR_INPUT_DEVICE_POINTER:
  		createpointer(wlr_pointer_from_input_device(device));
  		break;
@@ -187,7 +188,7 @@ index 12f441e..1f3b325 100644
  	default:
  		/* TODO handle other input device types */
  		break;
-@@ -2584,6 +2658,8 @@ setup(void)
+@@ -2584,6 +2660,8 @@ setup(void)
  
  	relative_pointer_mgr = wlr_relative_pointer_manager_v1_create(dpy);
  
@@ -196,7 +197,7 @@ index 12f441e..1f3b325 100644
  	/*
  	 * Creates a cursor, which is a wlroots utility for tracking the cursor
  	 * image shown on screen.
-@@ -2613,6 +2689,11 @@ setup(void)
+@@ -2613,6 +2691,11 @@ setup(void)
  	wl_signal_add(&cursor->events.button, &cursor_button);
  	wl_signal_add(&cursor->events.axis, &cursor_axis);
  	wl_signal_add(&cursor->events.frame, &cursor_frame);
@@ -208,7 +209,7 @@ index 12f441e..1f3b325 100644
  
  	cursor_shape_mgr = wlr_cursor_shape_manager_v1_create(dpy, 1);
  	wl_signal_add(&cursor_shape_mgr->events.request_set_shape, &request_set_cursor_shape);
-@@ -2708,6 +2789,163 @@ tagmon(const Arg *arg)
+@@ -2708,6 +2791,163 @@ tagmon(const Arg *arg)
  		setmon(sel, dirtomon(arg->i), 0);
  }
  
