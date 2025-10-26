@@ -1,17 +1,20 @@
-From 735440660fd2bccdde982f9c3d758e189ba35e40 Mon Sep 17 00:00:00 2001
+From 672df57ab7d5b52f91a712eaf3954d580cdf8ba3 Mon Sep 17 00:00:00 2001
 From: Zuki Air <zukirust@gmail.com>
 Date: Thu, 7 Aug 2025 13:19:59 +0100
 Subject: [PATCH] riverctl patch
 
+make setborderpx apply instantly
+
+add setting border colors via dwlctl
 ---
  .gitignore                              |   1 +
  Makefile                                |  22 +-
- config.def.h                            |  36 +-
+ config.def.h                            |  42 +-
  dwl.c                                   |  47 +-
- dwlctl.c                                | 133 +++++
+ dwlctl.c                                | 133 ++++
  protocols/river-control-unstable-v1.xml |  85 +++
- river-control.h                         | 753 ++++++++++++++++++++++++
- 7 files changed, 1055 insertions(+), 22 deletions(-)
+ river-control.h                         | 789 ++++++++++++++++++++++++
+ 7 files changed, 1094 insertions(+), 25 deletions(-)
  create mode 100644 dwlctl.c
  create mode 100644 protocols/river-control-unstable-v1.xml
  create mode 100644 river-control.h
@@ -75,18 +78,25 @@ index 578194f..029dfad 100644
  dist: clean
  	mkdir -p dwl-$(VERSION)
 diff --git a/config.def.h b/config.def.h
-index 95c2afa..72afbd6 100644
+index 95c2afa..ccc3edb 100644
 --- a/config.def.h
 +++ b/config.def.h
-@@ -6,7 +6,7 @@
+@@ -6,11 +6,11 @@
  /* appearance */
  static const int sloppyfocus               = 1;  /* focus follows mouse */
  static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
 -static const unsigned int borderpx         = 1;  /* border pixel of windows */
 +static unsigned int borderpx         = 1;  /* border pixel of windows */
  static const float rootcolor[]             = COLOR(0x222222ff);
- static const float bordercolor[]           = COLOR(0x444444ff);
- static const float focuscolor[]            = COLOR(0x005577ff);
+-static const float bordercolor[]           = COLOR(0x444444ff);
+-static const float focuscolor[]            = COLOR(0x005577ff);
+-static const float urgentcolor[]           = COLOR(0xff0000ff);
++static float bordercolor[]           = COLOR(0x444444ff);
++static float focuscolor[]            = COLOR(0x005577ff);
++static float urgentcolor[]           = COLOR(0xff0000ff);
+ /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
+ static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */
+ 
 @@ -21,7 +21,14 @@ static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You ca
  static int log_level = WLR_ERROR;
  
@@ -480,10 +490,10 @@ index 0000000..aa5fc4d
 +</protocol>
 diff --git a/river-control.h b/river-control.h
 new file mode 100644
-index 0000000..59561b6
+index 0000000..599cffe
 --- /dev/null
 +++ b/river-control.h
-@@ -0,0 +1,753 @@
+@@ -0,0 +1,789 @@
 +#include "river-control-unstable-v1-private-protocol.c"
 +#include "river-control-unstable-v1-protocol.h"
 +#ifdef KEYS_USED
@@ -495,6 +505,9 @@ index 0000000..59561b6
 +void clear_rules(const Arg*);
 +void clear_binds(const Arg*);
 +void setborderpx(const Arg*);
++void setfocuscolor(const Arg*);
++void setbordercolor(const Arg*);
++void seturgentcolor(const Arg*);
 +struct wl_list arg_str_store;
 +struct wl_list rule_str_store;
 +struct wl_list rules_list;
@@ -534,6 +547,7 @@ index 0000000..59561b6
 +    FUNC_STR_ARG_TYPE_INT,
 +    FUNC_STR_ARG_TYPE_UINT,
 +    FUNC_STR_ARG_TYPE_FLOAT,
++    FUNC_STR_ARG_TYPE_COLOR,
 +    FUNC_STR_ARG_TYPE_STRING_ARRAY,
 +    FUNC_STR_ARG_TYPE_WLR_DIRECTION,
 +    FUNC_STR_ARG_TYPE_LAYOUT,
@@ -552,6 +566,9 @@ index 0000000..59561b6
 +    { enter_mode, FUNC_STR_ARG_TYPE_STRING_ARRAY, "enter-mode"},
 +    { oneshot_mode, FUNC_STR_ARG_TYPE_STRING_ARRAY, "oneshot-mode"},
 +    { create_mode_user, FUNC_STR_ARG_TYPE_STRING_ARRAY, "create-mode"},
++    STR(setfocuscolor,FUNC_STR_ARG_TYPE_COLOR),
++    STR(setbordercolor,FUNC_STR_ARG_TYPE_COLOR),
++    STR(seturgentcolor,FUNC_STR_ARG_TYPE_COLOR),
 +    STR(setborderpx,FUNC_STR_ARG_TYPE_UINT),
 +    STR(setlayout,FUNC_STR_ARG_TYPE_LAYOUT),
 +    STR(spawn,FUNC_STR_ARG_TYPE_STRING_ARRAY),
@@ -641,9 +658,35 @@ index 0000000..59561b6
 +
 +void setborderpx(const Arg *arg) {
 +	Client *c;
++    Monitor *m;
 +    borderpx = arg->ui;
 +	wl_list_for_each(c, &clients, link) {
 +	    c->bw = borderpx;
++    }
++    wl_list_for_each(m, &mons,link) {
++        arrange(m);
++    }
++}
++
++void setfocuscolor(const Arg *arg) {
++    const float color[4] = COLOR(arg->i);
++    int i;
++	for (i = 0; i < 4; i++) {
++        focuscolor[i] = color[i];
++    }
++}
++void setbordercolor(const Arg *arg) {
++    const float color[4] = COLOR(arg->i);
++    int i;
++	for (i = 0; i < 4; i++) {
++        bordercolor[i] = color[i];
++    }
++}
++void seturgentcolor(const Arg *arg) {
++    const float color[4] = COLOR(arg->i);
++    int i;
++	for (i = 0; i < 4; i++) {
++        urgentcolor[i] = color[i];
 +    }
 +}
 +
@@ -1098,7 +1141,10 @@ index 0000000..59561b6
 +                        args->error = true;
 +                        args->error_msg = zriver_error_out_of_range;
 +                    }
-+
++                    break;
++                case(FUNC_STR_ARG_TYPE_COLOR):
++                    arg->i = strtol(argument,NULL,16);
++                    break;
 +            }
 +    }
 +    args->argc++;
@@ -1238,5 +1284,5 @@ index 0000000..59561b6
 +        zriver_arg_list_resource, zriver_control_handle_destory);
 +}
 -- 
-2.49.1
+2.51.0
 
