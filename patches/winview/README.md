@@ -31,5 +31,6 @@ This patch is inspired from <https://dwm.suckless.org/patches/winview/>. Citing 
 - [git branch](https://codeberg.org/dhruva_sambrani/dwl/src/branch/winview)
 
 ### Authors
+- [André Desgualdo Pereira](https://codeberg.org/Kana)
 - [Dhruva Sambrani](https://codeberg.org/dhruva_sambrani)
 
