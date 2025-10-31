@@ -83,7 +83,7 @@ diff -up ../../dwl_my_contribution/dwl/dwl.c ./dwl.c
 +        cols = 3;
 +
 +	rows = n / cols;
-+   
++
 +	/* window geometries */
 +	cw = cols ? m->w.width / cols : m->w.width;
 +	cn = 0; /* current column number */
