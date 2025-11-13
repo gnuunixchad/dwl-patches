@@ -3,7 +3,8 @@
 
 ### Download
 - [git branch](https://codeberg.org/Kana/dwl/src/branch/controlled_fullscreen)
-- [main 2025-10-08](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/controlled_fullscreen/controlled_fullscreen.patch)
+- [main 2025-11-13](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/controlled_fullscreen/controlled_fullscreen.patch)
+- [2025-10-08](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/controlled_fullscreen/controlled_fullscreen_2025_10_08.patch)
 
 ### Authors
 - [André Desgualdo Pereira](https://codeberg.org/Kana)
