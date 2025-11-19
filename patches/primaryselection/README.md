@@ -3,7 +3,8 @@ Adds a config option to disable/enable primary selection (middle-click paste).
 
 ### Download
 - [git branch](https://codeberg.org/nullsystem/dwl/src/branch/main_primaryselection)
-- [2024-04-06](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/primaryselection/primaryselection.patch)
+- [2025-11-19](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/primaryselection/primaryselection.patch)
+- [2024-04-06](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/primaryselection/primaryselection-2024-04-06.patch)
 
 ### Authors
 - [nullsystem](https://codeberg.org/nullsystem)
