@@ -6,6 +6,6 @@ Always use the English keymap to get keycodes, so key bindings work even when us
 - [v0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/en-keycodes/en-keycodes.patch)
 
 ### Authors
-- [ForzCross](https://codeberg.org/ForzCross)
 - [Nikita Ivanov](https://codeberg.org/nikitaivanov) ([GitHub](https://github.com/NikitaIvanovV))
+- [ForzCross](https://codeberg.org/ForzCross)
 - [dimkr](https://codeberg.org/dimkr) (<dima@dimakrasner.com>)
