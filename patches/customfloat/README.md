@@ -20,5 +20,6 @@ The "Monitor area" refers to the space enclosed by the green rectangle, while th
 - [v0.5](https://codeberg.org/dwl/dwl-patches/raw/commit/bf098459219e7a473d8edb4c0435aeb6a4b82e38/customfloat/customfloat.patch)
 
 ### Authors
+- [fauxmight](https://codeberg.org/fauxmight)
 - [wochap](https://codeberg.org/wochap)
 - [Stivvo](https://github.com/Stivvo)
