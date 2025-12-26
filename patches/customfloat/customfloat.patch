@@ -1,7 +1,7 @@
-From b9ec52a0dfdb4314070831b2aa7fc65177ebc2ad Mon Sep 17 00:00:00 2001
+From 83ce30cdfeebcc7569fbb30014db8d1758df79bd Mon Sep 17 00:00:00 2001
 From: A Frederick Christensen <dwl@ivories.org>
-Date: Sat, 16 Aug 2025 15:08:39 -0500
-Subject: [PATCH] customfloat-patch
+Date: Thu, 25 Dec 2025 18:44:07 -0600
+Subject: [PATCH] Add: customfloat patch
 
 ---
  config.def.h |  7 ++++---
@@ -49,7 +49,7 @@ index 12f441e..e364621 100644
  } Rule;
  
  typedef struct {
-@@ -482,4 +486,9 @@ applyrules(Client *c)
+@@ -482,6 +486,11 @@ applyrules(Client *c)
  	int i;
  	const Rule *r;
  	Monitor *mon = selmon, *m;
@@ -59,10 +59,10 @@ index 12f441e..e364621 100644
 +	int newy;
 +	int apply_resize = 0;
  
-	appid = client_get_appid(c);
-	title = client_get_title(c);
-@@ -495,0 +504,0 @@ applyrules(Client *c)
-			wl_list_for_each(m, &mons, link) {
+ 	appid = client_get_appid(c);
+ 	title = client_get_title(c);
+@@ -495,12 +504,29 @@ applyrules(Client *c)
+ 			wl_list_for_each(m, &mons, link) {
  				if (r->monitor == i++)
  					mon = m;
 +				if (c->isfloating || !mon->lt[mon->sellt]->arrange) {
@@ -77,8 +77,8 @@ index 12f441e..e364621 100644
  			}
  		}
  	}
-
-	c->isfloating |= client_is_float_type(c);
+ 
+ 	c->isfloating |= client_is_float_type(c);
  	setmon(c, mon, newtags);
 +	if (apply_resize) {
 +		resize(c, (struct wlr_box){
@@ -92,5 +92,5 @@ index 12f441e..e364621 100644
  
  void
 -- 
-2.50.1
+2.51.2
 
