@@ -9,6 +9,7 @@ Note: Commands from array are executed using execvp(). So if you need to execute
 - [0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/autostart/autostart-0.7.patch)
 
 ### Authors
+- [fauxmight](https://codeberg.org/fauxmight)
 - [sevz](https://codeberg.org/sevz)
 - [Rayan Nakib](https://nakibrayan2.pages.dev/)
 - [NFVblog](https://github.com/nf02)
