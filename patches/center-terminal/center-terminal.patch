@@ -1,6 +1,6 @@
-From 340cc5ef90dfcc495bdad045f3f76ae07405cffd Mon Sep 17 00:00:00 2001
+From 897765216ac8567a40654b813379a4e074ca6298 Mon Sep 17 00:00:00 2001
 From: Guido Cella <guido@guidocella.xyz>
-Date: Tue, 6 Feb 2024 09:20:48 +0100
+Date: Mon, 9 Feb 2026 10:21:33 +0100
 Subject: [PATCH] add a keybinding to center the terminal
 
 Add a keybinding that toggles centering the terminally horizontally when
@@ -14,19 +14,19 @@ covering the wallpaper more than necessary.
  2 files changed, 21 insertions(+)
 
 diff --git a/config.def.h b/config.def.h
-index 22d2171..8229fcc 100644
+index 8a6eda0..8c35c40 100644
 --- a/config.def.h
 +++ b/config.def.h
-@@ -142,6 +142,7 @@ static const Key keys[] = {
- 	{ MODKEY,                    XKB_KEY_space,      setlayout,      {0} },
- 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,      togglefloating, {0} },
- 	{ MODKEY,                    XKB_KEY_e,         togglefullscreen, {0} },
-+	{ MODKEY,                    XKB_KEY_v,          togglecenter,   {0} },
- 	{ MODKEY,                    XKB_KEY_0,          view,           {.ui = ~0} },
- 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_parenright, tag,            {.ui = ~0} },
- 	{ MODKEY,                    XKB_KEY_comma,      focusmon,       {.i = WLR_DIRECTION_LEFT} },
+@@ -138,6 +138,7 @@ static const Key keys[] = {
+ 	{ MODKEY,                    XKB_KEY_space,       setlayout,        {0} },
+ 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,       togglefloating,   {0} },
+ 	{ MODKEY,                    XKB_KEY_e,           togglefullscreen, {0} },
++	{ MODKEY,                    XKB_KEY_v,           togglecenter,   {0} },
+ 	{ MODKEY,                    XKB_KEY_0,           view,             {.ui = ~0} },
+ 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_parenright,  tag,              {.ui = ~0} },
+ 	{ MODKEY,                    XKB_KEY_comma,       focusmon,         {.i = WLR_DIRECTION_LEFT} },
 diff --git a/dwl.c b/dwl.c
-index 12f441e..3b15748 100644
+index 44f3ad9..9ee397a 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -8,6 +8,7 @@
@@ -72,7 +72,7 @@ index 12f441e..3b15748 100644
  	c->isfloating |= client_is_float_type(c);
  	setmon(c, mon, newtags);
  }
-@@ -2730,6 +2738,11 @@ tile(Monitor *m)
+@@ -2731,6 +2739,11 @@ tile(Monitor *m)
  		if (!VISIBLEON(c, m) || c->isfloating || c->isfullscreen)
  			continue;
  		if (i < m->nmaster) {
@@ -84,7 +84,7 @@ index 12f441e..3b15748 100644
  			resize(c, (struct wlr_box){.x = m->w.x, .y = m->w.y + my, .width = mw,
  				.height = (m->w.height - my) / (MIN(n, m->nmaster) - i)}, 0);
  			my += c->geom.height;
-@@ -2742,6 +2755,13 @@ tile(Monitor *m)
+@@ -2743,6 +2756,13 @@ tile(Monitor *m)
  	}
  }
  
@@ -99,5 +99,5 @@ index 12f441e..3b15748 100644
  togglefloating(const Arg *arg)
  {
 -- 
-2.49.0
+2.52.0
 

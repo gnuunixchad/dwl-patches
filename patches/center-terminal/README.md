@@ -7,7 +7,7 @@ covering the wallpaper more than necessary.
 
 ### Download
 - [git branch](https://codeberg.org/guidocella/dwl/src/branch/center-terminal)
-- [2024-02-06](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/center-terminal/center-terminal.patch)
+- [2026-02-09](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/center-terminal/center-terminal.patch)
 
 ### Authors
 - [Guido Cella](https://codeberg.org/guidocella)

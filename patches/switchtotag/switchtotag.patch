@@ -1,4 +1,4 @@
-From 08cfc2eceb34316cfd7eaf591a8a631e3d58ff3a Mon Sep 17 00:00:00 2001
+From bfcfb26b00cb93a359469cb8817861439818b430 Mon Sep 17 00:00:00 2001
 From: Guido Cella <guido@guidocella.xyz>
 Date: Mon, 30 Sep 2024 08:40:25 +0200
 Subject: [PATCH] allow switching to the configured tag when a window opens
@@ -11,28 +11,27 @@ then switch back when it closes.
  2 files changed, 22 insertions(+), 7 deletions(-)
 
 diff --git a/config.def.h b/config.def.h
-index 22d2171..52ea128 100644
+index 8a6eda0..59e3ac5 100644
 --- a/config.def.h
 +++ b/config.def.h
-@@ -22,10 +22,10 @@ static int log_level = WLR_ERROR;
+@@ -21,9 +21,9 @@ static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You ca
+ static int log_level = WLR_ERROR;
  
- /* NOTE: ALWAYS keep a rule declared even if you don't use rules (e.g leave at least one example) */
  static const Rule rules[] = {
 -	/* app_id             title       tags mask     isfloating   monitor */
-+	/* app_id             title       tags mask     switchtotag   isfloating   monitor */
- 	/* examples: */
 -	{ "Gimp_EXAMPLE",     NULL,       0,            1,           -1 }, /* Start on currently visible tags floating, not tiled */
 -	{ "firefox_EXAMPLE",  NULL,       1 << 8,       0,           -1 }, /* Start on ONLY tag "9" */
-+	{ "Gimp_EXAMPLE",     NULL,       0,            0,            1,           -1 }, /* Start on currently visible tags floating, not tiled */
-+	{ "firefox_EXAMPLE",  NULL,       1 << 8,       1,            0,           -1 }, /* Start on ONLY tag "9" */
++	/* app_id             title       tags mask     switchtotag   isfloating   monitor */
++	{ "Gimp_EXAMPLE",     NULL,       0,            0             1,           -1 }, /* Start on currently visible tags floating, not tiled */
++	{ "firefox_EXAMPLE",  NULL,       1 << 8,       1             0,           -1 }, /* Start on ONLY tag "9" */
+     /* default/example rule: can be changed but cannot be eliminated; at least one rule must exist */
  };
  
- /* layout(s) */
 diff --git a/dwl.c b/dwl.c
-index dc0c861..621b614 100644
+index 44f3ad9..7a97d94 100644
 --- a/dwl.c
 +++ b/dwl.c
-@@ -142,6 +142,7 @@ typedef struct {
+@@ -138,6 +138,7 @@ typedef struct {
  	unsigned int bw;
  	uint32_t tags;
  	int isfloating, isurgent, isfullscreen;
@@ -40,7 +39,7 @@ index dc0c861..621b614 100644
  	uint32_t resize; /* configure serial of a pending resize */
  } Client;
  
-@@ -230,6 +231,7 @@ typedef struct {
+@@ -226,6 +227,7 @@ typedef struct {
  	const char *id;
  	const char *title;
  	uint32_t tags;
@@ -48,7 +47,7 @@ index dc0c861..621b614 100644
  	int isfloating;
  	int monitor;
  } Rule;
-@@ -245,7 +247,7 @@ typedef struct {
+@@ -241,7 +243,7 @@ typedef struct {
  
  /* function declarations */
  static void applybounds(Client *c, struct wlr_box *bbox);
@@ -57,7 +56,7 @@ index dc0c861..621b614 100644
  static void arrange(Monitor *m);
  static void arrangelayer(Monitor *m, struct wl_list *list,
  		struct wlr_box *usable_area, int exclusive);
-@@ -449,7 +451,7 @@ applybounds(Client *c, struct wlr_box *bbox)
+@@ -474,7 +476,7 @@ applybounds(Client *c, struct wlr_box *bbox)
  }
  
  void
@@ -66,7 +65,7 @@ index dc0c861..621b614 100644
  {
  	/* rule matching */
  	const char *appid, *title;
-@@ -472,6 +474,11 @@ applyrules(Client *c)
+@@ -496,6 +498,11 @@ applyrules(Client *c)
  				if (r->monitor == i++)
  					mon = m;
  			}
@@ -77,9 +76,9 @@ index dc0c861..621b614 100644
 +			}
  		}
  	}
- 	setmon(c, mon, newtags);
-@@ -795,7 +802,7 @@ commitnotify(struct wl_listener *listener, void *data)
- 		 * a different monitor based on its title this will likely select
+ 
+@@ -864,7 +871,7 @@ commitnotify(struct wl_listener *listener, void *data)
+ 		 * a different monitor based on its title, this will likely select
  		 * a wrong monitor.
  		 */
 -		applyrules(c);
@@ -87,7 +86,7 @@ index dc0c861..621b614 100644
  		if (c->mon) {
  			client_set_scale(client_surface(c), c->mon->wlr_output->scale);
  		}
-@@ -1733,7 +1740,7 @@ mapnotify(struct wl_listener *listener, void *data)
+@@ -1790,7 +1797,7 @@ mapnotify(struct wl_listener *listener, void *data)
  		c->isfloating = 1;
  		setmon(c, p->mon, p->tags);
  	} else {
@@ -96,7 +95,7 @@ index dc0c861..621b614 100644
  	}
  	printstatus();
  
-@@ -2769,6 +2776,14 @@ unmapnotify(struct wl_listener *listener, void *data)
+@@ -2831,6 +2838,14 @@ unmapnotify(struct wl_listener *listener, void *data)
  		wl_list_remove(&c->flink);
  	}
  
@@ -112,5 +111,5 @@ index dc0c861..621b614 100644
  	printstatus();
  	motionnotify(0, NULL, 0, 0, 0, 0);
 -- 
-2.46.0
+2.52.0
 
