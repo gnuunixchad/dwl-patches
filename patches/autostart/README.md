@@ -5,7 +5,8 @@ Note: Commands from array are executed using execvp(). So if you need to execute
 
 ### Download
 - [git branch](https://codeberg.org/sevz/dwl/src/branch/autostart)
-- [2025-01-20](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/autostart/autostart.patch)
+- [wlroots-next-f4249db](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/autostart/autostart-wlroots-next-f4249db.patch)
+- [0.8](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/autostart/autostart-0.8.patch)
 - [0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/autostart/autostart-0.7.patch)
 
 ### Authors
