@@ -19,7 +19,8 @@ Adds functions to add, toggle and remove clients to/from scratchpad client list.
 
 ### Download
 - [git branch](https://codeberg.org/julmajustus/dwl/src/branch/simple_scratchpad) 
-- [0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/simple_scratchpad/simple_scratchpad-v0.7.patch)
+- [scratchpad-wlroots-next-f4249db.patch](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/simple_scratchpad/simple_scratchpad-f4249db.patch)
+- [scratchpad-0.8.patch](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/simple_scratchpad/simple_scratchpad-0.8.patch)
 
 ### Authors
 - [julmajustus](https://codeberg.org/julmajustus)
