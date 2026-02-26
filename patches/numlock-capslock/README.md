@@ -2,7 +2,7 @@
 Allows activating numlock or capslock at startup.
 
 ### Download
-- [wlroots-next-f4249db](/dwl/dwl-patches/raw/branch/main/patches/numlock-capslock/numlock-capslock-wlroots-next-f4249db.patch)
+- [numlock-capslock-wlroots-next-f4249db.patch](/dwl/dwl-patches/raw/branch/main/patches/numlock-capslock/numlock-capslock-wlroots-next-f4249db.patch)
 - [numlock-capslock-0.8.patch](/dwl/dwl-patches/raw/branch/main/patches/numlock-capslock/numlock-capslock-0.8.patch)
 
 ### Authors
