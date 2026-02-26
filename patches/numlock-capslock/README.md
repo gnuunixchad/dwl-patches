@@ -2,9 +2,9 @@
 Allows activating numlock or capslock at startup.
 
 ### Download
-- [git branch](https://codeberg.org/sevz/dwl/src/branch/numlock-capslock)
-- [main 2025-01-20](/dwl/dwl-patches/raw/branch/main/patches/numlock-capslock/numlock-capslock.patch)
-- [numlock-capslock.patch](/dwl/dwl-patches/raw/branch/main/patches/numlock-capslock/numlock-capslock-0.7.patch)
+- [wlroots-next-f4249db](/dwl/dwl-patches/raw/branch/main/patches/numlock-capslock/numlock-capslock-wlroots-next-f4249db.patch)
+- [numlock-capslock-0.8.patch](/dwl/dwl-patches/raw/branch/main/patches/numlock-capslock/numlock-capslock-0.8.patch)
 
 ### Authors
+- [fauxmight](https://codeberg.org/fauxmight)
 - [sevz](https://codeberg.org/sevz)
