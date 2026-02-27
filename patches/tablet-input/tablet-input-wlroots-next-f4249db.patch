@@ -53,8 +53,8 @@ index 8a9715d..e7d796b 100644
  #include <wlr/types/wlr_session_lock_v1.h>
  #include <wlr/types/wlr_single_pixel_buffer_v1.h>
  #include <wlr/types/wlr_subcompositor.h>
-+#include <wlr/types/wlr_tablet_tool.h>
 +#include <wlr/types/wlr_tablet_pad.h>
++#include <wlr/types/wlr_tablet_tool.h>
 +#include <wlr/types/wlr_tablet_v2.h>
  #include <wlr/types/wlr_viewporter.h>
  #include <wlr/types/wlr_virtual_keyboard_v1.h>
