@@ -1,15 +1,14 @@
-From f133af7120e28f3d8bda4d4e14b3bfd477b46426 Mon Sep 17 00:00:00 2001
+From 44dfe863a00f4bdc646df3d761ac97711dd2107a Mon Sep 17 00:00:00 2001
 From: A Frederick Christensen <dwl@ivories.org>
-Date: Sat, 17 May 2025 21:59:37 -0500
-Subject: [PATCH] Add support for touchscreen input devices
+Date: Thu, 26 Feb 2026 22:12:53 -0600
+Subject: [PATCH] Apply touch-input patch
 
-and send the appropriate events to clients
 ---
  dwl.c | 158 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  1 file changed, 158 insertions(+)
 
 diff --git a/dwl.c b/dwl.c
-index 4816159..3a378f9 100644
+index 44f3ad9..ccfe33c 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -51,6 +51,7 @@
@@ -73,7 +72,7 @@ index 4816159..3a378f9 100644
  static struct wl_listener new_session_lock = {.notify = locksession};
  
  #ifdef XWAYLAND
-@@ -778,6 +796,10 @@ cleanuplisteners(void)
+@@ -781,6 +799,10 @@ cleanuplisteners(void)
  	wl_list_remove(&request_set_cursor_shape.link);
  	wl_list_remove(&request_start_drag.link);
  	wl_list_remove(&start_drag.link);
@@ -84,7 +83,7 @@ index 4816159..3a378f9 100644
  	wl_list_remove(&new_session_lock.link);
  #ifdef XWAYLAND
  	wl_list_remove(&new_xwayland_surface.link);
-@@ -1196,6 +1218,16 @@ createpopup(struct wl_listener *listener, void *data)
+@@ -1199,6 +1221,16 @@ createpopup(struct wl_listener *listener, void *data)
  	LISTEN_STATIC(&popup->base->surface->events.commit, commitpopup);
  }
  
@@ -101,7 +100,7 @@ index 4816159..3a378f9 100644
  void
  cursorconstrain(struct wlr_pointer_constraint_v1 *constraint)
  {
-@@ -1587,6 +1619,9 @@ inputdevice(struct wl_listener *listener, void *data)
+@@ -1590,6 +1622,9 @@ inputdevice(struct wl_listener *listener, void *data)
  	case WLR_INPUT_DEVICE_POINTER:
  		createpointer(wlr_pointer_from_input_device(device));
  		break;
@@ -111,7 +110,7 @@ index 4816159..3a378f9 100644
  	default:
  		/* TODO handle other input device types */
  		break;
-@@ -1599,6 +1634,8 @@ inputdevice(struct wl_listener *listener, void *data)
+@@ -1602,6 +1637,8 @@ inputdevice(struct wl_listener *listener, void *data)
  	caps = WL_SEAT_CAPABILITY_POINTER;
  	if (!wl_list_empty(&kb_group->wlr_group->devices))
  		caps |= WL_SEAT_CAPABILITY_KEYBOARD;
@@ -120,7 +119,7 @@ index 4816159..3a378f9 100644
  	wlr_seat_set_capabilities(seat, caps);
  }
  
-@@ -2610,6 +2647,13 @@ setup(void)
+@@ -2615,6 +2652,13 @@ setup(void)
  	wl_signal_add(&cursor->events.axis, &cursor_axis);
  	wl_signal_add(&cursor->events.frame, &cursor_frame);
  
@@ -134,7 +133,7 @@ index 4816159..3a378f9 100644
  	cursor_shape_mgr = wlr_cursor_shape_manager_v1_create(dpy, 1);
  	wl_signal_add(&cursor_shape_mgr->events.request_set_shape, &request_set_cursor_shape);
  
-@@ -2782,6 +2826,120 @@ toggleview(const Arg *arg)
+@@ -2787,6 +2831,120 @@ toggleview(const Arg *arg)
  	printstatus();
  }
  
@@ -256,5 +255,5 @@ index 4816159..3a378f9 100644
  unlocksession(struct wl_listener *listener, void *data)
  {
 -- 
-2.49.0
+2.52.0
 
