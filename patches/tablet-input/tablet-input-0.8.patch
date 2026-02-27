@@ -1,16 +1,16 @@
-From 6063acfd61538c621a3124f3da38f9b47a56c292 Mon Sep 17 00:00:00 2001
+From 1069919d0252e554faddccc1f9da154e171ccdda Mon Sep 17 00:00:00 2001
 From: A Frederick Christensen <dwl@ivories.org>
-Date: Fri, 19 Dec 2025 13:34:20 -0600
-Subject: [PATCH] Correct the tablet-input patch for dwl 0.7
+Date: Thu, 26 Feb 2026 21:56:13 -0600
+Subject: [PATCH] Apply tablet-input patch
 
 ---
  Makefile     |   6 +-
  config.def.h |   1 +
- dwl.c        | 225 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 231 insertions(+), 1 deletion(-)
+ dwl.c        | 240 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 246 insertions(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index ff53040..66c06b2 100644
+index 578194f..e0d1835 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -21,7 +21,8 @@ dwl: dwl.o util.o
@@ -34,7 +34,7 @@ index ff53040..66c06b2 100644
  config.h:
  	cp config.def.h $@
 diff --git a/config.def.h b/config.def.h
-index 22d2171..3ad98ef 100644
+index 8a6eda0..1f20dfd 100644
 --- a/config.def.h
 +++ b/config.def.h
 @@ -4,6 +4,7 @@
@@ -46,10 +46,10 @@ index 22d2171..3ad98ef 100644
  static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
  static const unsigned int borderpx         = 1;  /* border pixel of windows */
 diff --git a/dwl.c b/dwl.c
-index c717c1d..ed7e056 100644
+index 44f3ad9..4ef2cc8 100644
 --- a/dwl.c
 +++ b/dwl.c
-@@ -50,6 +50,9 @@
+@@ -51,6 +51,9 @@
  #include <wlr/types/wlr_session_lock_v1.h>
  #include <wlr/types/wlr_single_pixel_buffer_v1.h>
  #include <wlr/types/wlr_subcompositor.h>
@@ -59,7 +59,7 @@ index c717c1d..ed7e056 100644
  #include <wlr/types/wlr_viewporter.h>
  #include <wlr/types/wlr_virtual_keyboard_v1.h>
  #include <wlr/types/wlr_virtual_pointer_v1.h>
-@@ -270,6 +273,7 @@ static void createnotify(struct wl_listener *listener, void *data);
+@@ -268,6 +271,7 @@ static void createnotify(struct wl_listener *listener, void *data);
  static void createpointer(struct wlr_pointer *pointer);
  static void createpointerconstraint(struct wl_listener *listener, void *data);
  static void createpopup(struct wl_listener *listener, void *data);
@@ -67,9 +67,9 @@ index c717c1d..ed7e056 100644
  static void cursorconstrain(struct wlr_pointer_constraint_v1 *constraint);
  static void cursorframe(struct wl_listener *listener, void *data);
  static void cursorwarptohint(void);
-@@ -284,6 +288,9 @@ static void destroypointerconstraint(struct wl_listener *listener, void *data);
+@@ -281,6 +285,9 @@ static void destroynotify(struct wl_listener *listener, void *data);
+ static void destroypointerconstraint(struct wl_listener *listener, void *data);
  static void destroysessionlock(struct wl_listener *listener, void *data);
- static void destroysessionmgr(struct wl_listener *listener, void *data);
  static void destroykeyboardgroup(struct wl_listener *listener, void *data);
 +static void destroytablet(struct wl_listener *listener, void *data);
 +static void destroytabletsurfacenotify(struct wl_listener *listener, void *data);
@@ -77,7 +77,7 @@ index c717c1d..ed7e056 100644
  static Monitor *dirtomon(enum wlr_direction dir);
  static void focusclient(Client *c, int lift);
  static void focusmon(const Arg *arg);
-@@ -337,6 +344,11 @@ static void spawn(const Arg *arg);
+@@ -333,6 +340,11 @@ static void spawn(const Arg *arg);
  static void startdrag(struct wl_listener *listener, void *data);
  static void tag(const Arg *arg);
  static void tagmon(const Arg *arg);
@@ -89,7 +89,7 @@ index c717c1d..ed7e056 100644
  static void tile(Monitor *m);
  static void togglefloating(const Arg *arg);
  static void togglefullscreen(const Arg *arg);
-@@ -396,6 +408,13 @@ static struct wlr_pointer_constraint_v1 *active_constraint;
+@@ -390,6 +402,13 @@ static struct wlr_pointer_constraint_v1 *active_constraint;
  static struct wlr_cursor *cursor;
  static struct wlr_xcursor_manager *cursor_mgr;
  
@@ -103,7 +103,20 @@ index c717c1d..ed7e056 100644
  static struct wlr_scene_rect *root_bg;
  static struct wlr_session_lock_manager_v1 *session_lock_mgr;
  static struct wlr_scene_rect *locked_bg;
-@@ -1137,6 +1156,28 @@ createpopup(struct wl_listener *listener, void *data)
+@@ -412,6 +431,12 @@ static struct wl_listener cursor_button = {.notify = buttonpress};
+ static struct wl_listener cursor_frame = {.notify = cursorframe};
+ static struct wl_listener cursor_motion = {.notify = motionrelative};
+ static struct wl_listener cursor_motion_absolute = {.notify = motionabsolute};
++static struct wl_listener tablet_device_destroy = {.notify = destroytablet};
++static struct wl_listener tablet_tool_axis = {.notify = tablettoolaxis};
++static struct wl_listener tablet_tool_button = {.notify = tablettoolbutton};
++static struct wl_listener tablet_tool_destroy = {.notify = destroytablettool};
++static struct wl_listener tablet_tool_proximity = {.notify = tablettoolproximity};
++static struct wl_listener tablet_tool_tip = {.notify = tablettooltip};
+ static struct wl_listener gpu_reset = {.notify = gpureset};
+ static struct wl_listener layout_change = {.notify = updatemons};
+ static struct wl_listener new_idle_inhibitor = {.notify = createidleinhibitor};
+@@ -1199,6 +1224,28 @@ createpopup(struct wl_listener *listener, void *data)
  	LISTEN_STATIC(&popup->base->surface->events.commit, commitpopup);
  }
  
@@ -117,7 +130,7 @@ index c717c1d..ed7e056 100644
 +			return;
 +
 +		tablet = wlr_tablet_create(tablet_mgr, seat, device);
-+		LISTEN_STATIC(&tablet->wlr_device->events.destroy, destroytablet);
++		wl_signal_add(&tablet->wlr_device->events.destroy, &tablet_device_destroy);
 +		if (libinput_device_config_send_events_get_modes(device_handle)) {
 +			libinput_device_config_send_events_set_mode(device_handle, send_events_mode);
 +			wlr_cursor_attach_input_device(cursor, device);
@@ -132,13 +145,14 @@ index c717c1d..ed7e056 100644
  void
  cursorconstrain(struct wlr_pointer_constraint_v1 *constraint)
  {
-@@ -1323,6 +1364,28 @@ destroykeyboardgroup(struct wl_listener *listener, void *data)
+@@ -1383,6 +1430,29 @@ destroykeyboardgroup(struct wl_listener *listener, void *data)
  	free(group);
  }
  
 +void
 +destroytablet(struct wl_listener *listener, void *data)
 +{
++  wl_list_remove(&tablet_device_destroy.link);
 +  wlr_cursor_detach_input_device(cursor, tablet->wlr_device);
 +	tablet = NULL;
 +}
@@ -161,7 +175,7 @@ index c717c1d..ed7e056 100644
  Monitor *
  dirtomon(enum wlr_direction dir)
  {
-@@ -1542,6 +1605,12 @@ inputdevice(struct wl_listener *listener, void *data)
+@@ -1590,6 +1660,12 @@ inputdevice(struct wl_listener *listener, void *data)
  	case WLR_INPUT_DEVICE_POINTER:
  		createpointer(wlr_pointer_from_input_device(device));
  		break;
@@ -174,7 +188,7 @@ index c717c1d..ed7e056 100644
  	default:
  		/* TODO handle other input device types */
  		break;
-@@ -2569,6 +2638,8 @@ setup(void)
+@@ -2585,6 +2661,8 @@ setup(void)
  
  	relative_pointer_mgr = wlr_relative_pointer_manager_v1_create(dpy);
  
@@ -183,18 +197,19 @@ index c717c1d..ed7e056 100644
  	/*
  	 * Creates a cursor, which is a wlroots utility for tracking the cursor
  	 * image shown on screen.
-@@ -2598,6 +2669,10 @@ setup(void)
- 	LISTEN_STATIC(&cursor->events.button, buttonpress);
- 	LISTEN_STATIC(&cursor->events.axis, axisnotify);
- 	LISTEN_STATIC(&cursor->events.frame, cursorframe);
-+        LISTEN_STATIC(&cursor->events.tablet_tool_proximity, tablettoolproximity);
-+	LISTEN_STATIC(&cursor->events.tablet_tool_axis, tablettoolaxis);
-+	LISTEN_STATIC(&cursor->events.tablet_tool_button, tablettoolbutton);
-+	LISTEN_STATIC(&cursor->events.tablet_tool_tip, tablettooltip);
+@@ -2614,6 +2692,11 @@ setup(void)
+ 	wl_signal_add(&cursor->events.button, &cursor_button);
+ 	wl_signal_add(&cursor->events.axis, &cursor_axis);
+ 	wl_signal_add(&cursor->events.frame, &cursor_frame);
++	wl_signal_add(&cursor->events.tablet_tool_proximity, &tablet_tool_proximity);
++	wl_signal_add(&cursor->events.tablet_tool_axis, &tablet_tool_axis);
++	wl_signal_add(&cursor->events.tablet_tool_button, &tablet_tool_button);
++	wl_signal_add(&cursor->events.tablet_tool_tip, &tablet_tool_tip);
++
  
  	cursor_shape_mgr = wlr_cursor_shape_manager_v1_create(dpy, 1);
- 	LISTEN_STATIC(&cursor_shape_mgr->events.request_set_shape, setcursorshape);
-@@ -2691,6 +2766,156 @@ tagmon(const Arg *arg)
+ 	wl_signal_add(&cursor_shape_mgr->events.request_set_shape, &request_set_cursor_shape);
+@@ -2709,6 +2792,163 @@ tagmon(const Arg *arg)
  		setmon(sel, dirtomon(arg->i), 0);
  }
  
@@ -243,7 +258,7 @@ index c717c1d..ed7e056 100644
 +	motionnotify(0, NULL, 0, 0, 0, 0);
 +
 +	xytonode(cursor->x, cursor->y, &surface, NULL, NULL, &sx, &sy);
-+	if (surface && !wlr_surface_accepts_tablet_v2(tablet, surface))
++	if (surface && !wlr_surface_accepts_tablet_v2(surface, tablet))
 +		surface = NULL;
 +
 +	if (surface != tablet_curr_surface) {
@@ -277,8 +292,8 @@ index c717c1d..ed7e056 100644
 +
 +	if (!tablet_tool) {
 +		tablet_tool = wlr_tablet_tool_create(tablet_mgr, seat, tool);
-+		LISTEN_STATIC(&tablet_tool->wlr_tool->events.destroy, destroytablettool);
-+		LISTEN_STATIC(&tablet_tool->events.set_cursor, setcursor);
++		wl_signal_add(&tablet_tool->wlr_tool->events.destroy, &tablet_tool_destroy);
++		wl_signal_add(&tablet_tool->events.set_cursor, &request_cursor);
 +	}
 +
 +	switch (event->state) {
@@ -291,6 +306,9 @@ index c717c1d..ed7e056 100644
 +		break;
 +	}
 +}
++
++double tilt_x = 0;
++double tilt_y = 0;
 +
 +void
 +tablettoolaxis(struct wl_listener *listener, void *data)
@@ -306,8 +324,12 @@ index c717c1d..ed7e056 100644
 +		wlr_tablet_v2_tablet_tool_notify_pressure(tablet_tool, event->pressure);
 +	if (event->updated_axes & WLR_TABLET_TOOL_AXIS_DISTANCE)
 +		wlr_tablet_v2_tablet_tool_notify_distance(tablet_tool, event->distance);
++	if (event->updated_axes & WLR_TABLET_TOOL_AXIS_TILT_X)
++		tilt_x = event->tilt_x;
++	if (event->updated_axes & WLR_TABLET_TOOL_AXIS_TILT_Y)
++		tilt_y = event->tilt_y;
 +	if (event->updated_axes & (WLR_TABLET_TOOL_AXIS_TILT_X | WLR_TABLET_TOOL_AXIS_TILT_Y))
-+		wlr_tablet_v2_tablet_tool_notify_tilt(tablet_tool, event->tilt_x, event->tilt_y);
++		wlr_tablet_v2_tablet_tool_notify_tilt(tablet_tool, tilt_x, tilt_y);
 +	if (event->updated_axes & WLR_TABLET_TOOL_AXIS_ROTATION)
 +		wlr_tablet_v2_tablet_tool_notify_rotation(tablet_tool, event->rotation);
 +	if (event->updated_axes & WLR_TABLET_TOOL_AXIS_SLIDER)
@@ -352,5 +374,5 @@ index c717c1d..ed7e056 100644
  tile(Monitor *m)
  {
 -- 
-2.51.2
+2.52.0
 
