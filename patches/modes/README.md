@@ -28,8 +28,10 @@ static const Modekey modekeys[] = {
 ```
 
 ### Download
+- [v0.8](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/modes/modes.patch)
 - [git branch](https://codeberg.org/wochap/dwl/src/branch/v0.5/modes)
-- [v0.5](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/modes/modes.patch)
+- [v0.5](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/modes/modes-0.5.patch)
 
 ### Authors
+- [unixchad](https://codeberg.org/unixchad)
 - [wochap](https://codeberg.org/wochap)
