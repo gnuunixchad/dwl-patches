@@ -15,10 +15,11 @@ gaps to be as big or bigger than "inner" gaps anyway.
 
 ### Download
 
-- [0.7 2025-02-11](/dwl/dwl-patches/raw/branch/main/patches/genericgaps/genericgaps-0.7.patch):
+- [0.8](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/genericgaps/genericgaps.patch)
+- [0.7 2025-02-11](https://codeberg.org/dwl/dwl-patches/raw/commit/58e371fcb31bde1e55f99498a77afd9b567a30c8/patches/genericgaps/genericgaps-0.7.patch):
   added support for `smartgaps` and `monoclegaps` settings and removed the suck
   from `arrange()` function
-- [0.7](/dwl/dwl-patches/raw/branch/main/patches/genericgaps/genericgaps.patch)
+- [0.7](https://codeberg.org/dwl/dwl-patches/raw/commit/f8d1cfad116c19c01593f7436468ec0cb7a3297b/patches/genericgaps/genericgaps.patch)
 
 ### Authors
 
