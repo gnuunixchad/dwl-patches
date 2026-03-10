@@ -509,7 +509,7 @@ index def2562..1c9ab67 100644
 +	wlr_log_init(CSYM(enum wlr_log_importance, log_level), NULL);
  
  	/* The Wayland display is managed by libwayland. It handles accepting
- 	 * clients from the Unix socket, manging Wayland globals, and so on. */
+ 	 * clients from the Unix socket, managing Wayland globals, and so on. */
 @@ -2454,7 +2576,7 @@ setup(void)
  
  	/* Initialize the scene graph used to lay out windows */

@@ -47,9 +47,9 @@ If you target the unstable `main` branch, specify that in the `Download` link on
     You may choose to include screenshots (hosted in your patch's subdirectory) in your `README.md`. The process is described [here](https://docs.codeberg.org/markdown/using-images/).
 
 8. Use the Codeberg web interface to send a pull request to [dwl-patches] (NOT to [dwl])
-9. WHEN YOUR PULL REQUEST IS APPROVED, your Codeberg account will also be granted commit access to [dwl-patches]. Once you have write access, you can make direct modifications/upates to your patches and you are free to create new patches rather than creating pull requests.
+9. WHEN YOUR PULL REQUEST IS APPROVED, your Codeberg account will also be granted commit access to [dwl-patches]. Once you have write access, you can make direct modifications/updates to your patches and you are free to create new patches rather than creating pull requests.
 
-Individuals who have made known that they no longer intend to maintain their patches will have commit access to the [dwl-pathces] repository removed.
+Individuals who have made known that they no longer intend to maintain their patches will have commit access to the [dwl-patches] repository removed.
 
 A returning user who formerly had commit access is welcome to open an issue on [dwl-patches] requesting commit access be reinstated. When doing so, please link to the original issue opened that granted commit access.
 

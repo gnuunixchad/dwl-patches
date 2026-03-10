@@ -3,7 +3,7 @@ Implements the function `winview` which switches the visible tags to the tags on
 
 This patch is inspired from <https://dwm.suckless.org/patches/winview/>. Citing the description of the dwm patch:
 
-> Dwm tags are a powerfull feature that allows organizing windows in workspaces. Sometime it can be difficult to remember the tag to activate to unhide a window. With the winview patch the window to unhide can be selected from the all-window view. The user switches to the all-window view (Mod1-0), selects the window (Mod1-j/k or using the mouse) and press Mod1-o. The key Mod1-o switches the view to the selected window tag.
+> Dwm tags are a powerful feature that allows organizing windows in workspaces. Sometime it can be difficult to remember the tag to activate to unhide a window. With the winview patch the window to unhide can be selected from the all-window view. The user switches to the all-window view (Mod1-0), selects the window (Mod1-j/k or using the mouse) and press Mod1-o. The key Mod1-o switches the view to the selected window tag.
 > 
 > #### Recommend patches
 > 

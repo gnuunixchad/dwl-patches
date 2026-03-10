@@ -60,7 +60,7 @@ index 775dadf..621779e 100644
 -	/* TODO: allow usage of scroll wheel for mousebindings, it can be implemented
 -	 * by checking the event's orientation and the delta of the event */
 +	handlecursoractivity();
-+	/* TODO: allow usage of scroll whell for mousebindings, it can be implemented
++	/* TODO: allow usage of scroll wheel for mousebindings, it can be implemented
 +	 * checking the event's orientation and the delta of the event */
  	/* Notify the client with pointer focus of the axis event. */
  	wlr_seat_pointer_notify_axis(seat,

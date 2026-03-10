@@ -7,7 +7,7 @@ To enable Xwayland support, you will need to enable it in the wlroots subproject
 ```sh
 meson setup -Dwlroots:xwayland=enabled build
 ```
-It is also reccomended to see the wlroots meson project configuration logs for any
+It is also recommended to see the wlroots meson project configuration logs for any
 unusual checks, such as requiring `hwdata` for the DRM backend.
 
 ### Download

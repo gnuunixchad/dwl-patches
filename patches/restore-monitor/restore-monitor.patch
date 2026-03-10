@@ -1,7 +1,7 @@
 From e42ca1c539437d3098d80983cfe2ad6f938d7a08 Mon Sep 17 00:00:00 2001
 From: Eldar Yusupov <eyusupov@gmail.com>
 Date: Sun, 17 Mar 2024 19:12:29 +0300
-Subject: [PATCH] Restore correct montior for client when it is reattached
+Subject: [PATCH] Restore correct monitor for client when it is reattached
 
 ---
  dwl.c | 24 ++++++++++++++++++++++--

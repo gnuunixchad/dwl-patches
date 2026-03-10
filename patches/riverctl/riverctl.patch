@@ -120,7 +120,7 @@ index 95c2afa..ccc3edb 100644
 -static const Key keys[] = {
 +/* note keys gets cleared with riverctl clear-binds but the keys_always are excluded from being cleared 
 + * this is to have a list of fallback keybinds if your riverctl script fails 
-+ * if you won't like to have keys[] declared commented out the KEYS_USED macro bellow to disable the functionality*/
++ * if you won't like to have keys[] declared commented out the KEYS_USED macro below to disable the functionality*/
 +#define KEYS_USED
 +static Key keys[] = {
  	/* Note that Shift changes certain key codes: c -> C, 2 -> at, etc. */
@@ -1267,7 +1267,7 @@ index 0000000..599cffe
 +    .add_argument = zriver_control_add_argument,
 +    .destroy = zriver_control_destroy,
 +};
-+static void zriver_control_handle_destory(struct wl_resource *resource) {
++static void zriver_control_handle_destroy(struct wl_resource *resource) {
 +    struct zriver_arg_list_resource *zriver_arg_list_resource = wl_resource_get_user_data(resource);
 +    free(zriver_arg_list_resource);
 +    printf("handle destroy\n");
@@ -1281,7 +1281,7 @@ index 0000000..599cffe
 +
 +
 +    wl_resource_set_implementation(resource, &zriver_control_interface,
-+        zriver_arg_list_resource, zriver_control_handle_destory);
++        zriver_arg_list_resource, zriver_control_handle_destroy);
 +}
 -- 
 2.51.0

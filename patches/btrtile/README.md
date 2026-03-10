@@ -61,7 +61,7 @@ When a new client appears:
 btrtile adds couple variables to config.h to fine tune the mouse resizing of tiled clients.
 
 1. **resize_factor**
-	- A multiplier to transfer pointer movement to client weight ratio. Depends heavily on mouse sensivity.  
+	- A multiplier to transfer pointer movement to client weight ratio. Depends heavily on mouse sensitivity.  
       Defaults to 0.0002f.
 
 2. **resize_interval_ms**

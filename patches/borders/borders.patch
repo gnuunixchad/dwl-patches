@@ -3,7 +3,7 @@ From: wochap <gean.marroquin@gmail.com>
 Date: Tue, 4 Jun 2024 16:02:25 -0500
 Subject: [PATCH] implement borders patch
 
-tihs patch adds 2 extra borders relative to the client, they don't
+this patch adds 2 extra borders relative to the client, they don't
 change the size of the client
 ---
  client.h     | 16 +++++++++++++---

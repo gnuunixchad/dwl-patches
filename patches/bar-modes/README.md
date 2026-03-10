@@ -14,7 +14,7 @@ Another usage is to serve as a hint for each modes keybindings:
 enum {
     BROWSER,
 };
-const char *modes_lablels[] = {
+const char *modes_labels[] = {
     "[f]irefox [b]rave [c]hromium [q]utebrowser",
 };
 ```

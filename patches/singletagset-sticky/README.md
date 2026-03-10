@@ -1,6 +1,6 @@
 ### Description
 Makes sticky work as expected with singletagset. The sticky window will
-stay on original output until you explicitely put it to a different monitor.
+stay on original output until you explicitly put it to a different monitor.
 
 This patch expects both [singletagset](https://codeberg.org/dwl/dwl-patches/src/branch/main/patches/singletagset) and [sticky](https://codeberg.org/dwl/dwl-patches/src/branch/main/patches/sticky) patches to be already in
 your tree committed. It applies onto them.

@@ -7,7 +7,7 @@ Most of this patch is stored in river-control.h, It contains a list of functions
 
 This patch's main intended use case is to have a startup script that calls dwlctl a bunch to add all the binds/rules you want, without the need of restarting dwl if you make any changes to the list of binds/rules.
 
-This patch also adds keybind modes which allow switching between a diffrent sets of keybinds on the fly.
+This patch also adds keybind modes which allow switching between a different sets of keybinds on the fly.
 Also you can set a keybind mode as  oneshot (meaning as soon as a keybind is activated the mode is switched) by using...
 `dwlctl oneshot-mode _layout_you_want_to_make_oneshot_here_ _layout_you_want_to_switch_to_after_keybind_pressed_`
 Just make sure to set a mode as oneshot after creating a bind under it otherwise it won't work.

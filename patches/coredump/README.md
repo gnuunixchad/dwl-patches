@@ -1,5 +1,5 @@
 ### Description
-Generate a coredump if dwl exited abnormally (to be more usefull you need to
+Generate a coredump if dwl exited abnormally (to be more useful you need to
 compile dwl and wlroots with debug symbols)
 
 ### Download

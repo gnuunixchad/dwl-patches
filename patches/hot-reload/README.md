@@ -15,7 +15,7 @@ So in short:
 
 #### Limitations
 Reloading the compositor will replace all functionality except for `main`, `setup`, `run` and the reload logic.
-Note that you're responsible yourself for reloading ressources like fonts, which may only get acquired once.
+Note that you're responsible yourself for reloading resources like fonts, which may only get acquired once.
 A lot of components of dwl will also only get run on a trigger (the tiling for example).
 So not every change will be immediate.
 Furthermore, any patch adding more global state to dwl cannot currently be reloaded properly since
@@ -47,13 +47,13 @@ From the cold part there are some newly available macros:
 * `CSYM(T, v)` dynamically accesses the value of the symbol `v` of type `T` from the shared object. Use this to query values from config.h for example.
 * `LISTEN_GLOBAL(E, L)` is similar to the `LISTEN` macro. `E` is an event and `L` the name of a global
 listener. Current implementation is a bit messy and I may fix it if someone bothers me about it.
-* `UNLISTEN(L)` takes a listener and unregisteres it. This is important for reloading.
+* `UNLISTEN(L)` takes a listener and unregisters it. This is important for reloading.
 
 When adding new code there are some considerations to be made. Since dwl decorates all symbols with `static` by default, we cannot access them as-is.
 C's macro system is a bit too powerful though and we use this to our advantage. We will repeatedly define and
 undefine a macro called `static` in order to replace the `static` keyword inside some sections.
-This allows us to do less refactoring and preserve a lot of the original patch compatability since we're only
-strategically adding lines. We're tring to be as minimally invasive as we can.
+This allows us to do less refactoring and preserve a lot of the original patch compatibility since we're only
+strategically adding lines. We're trying to be as minimally invasive as we can.
 As a general guide:
 * global state should be global for the cold part and `extern` in the cold part meaning it should be inside a block like this:
     ```C
@@ -87,7 +87,7 @@ Thus, we enclose them the same way we do functions:
     #ifdef HOT
     ... // function definitions here
     #endif
-* enfore use of the `LISTEN_GLOBAL` and `UNLISTEN` macros (I know this sucks but what can I do, I need to get
+* enforce use of the `LISTEN_GLOBAL` and `UNLISTEN` macros (I know this sucks but what can I do, I need to get
 access to the callbacks somehow). So you want
     * `wl_list_remove(listener.link)` to become `UNLISTEN(listener)` and
     * `wl_signal_add(event, global_listener)` to become `LISTEN_GLOBAL(event, global_listener)`.
