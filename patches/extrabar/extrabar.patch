@@ -1,5 +1,5 @@
 diff --git a/dwl.c b/dwl.c
-index 7fe9468..9fb2fbd 100644
+index 7fe9468..4e3272e 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -205,6 +205,7 @@ struct Monitor {
@@ -86,6 +86,15 @@ index 7fe9468..9fb2fbd 100644
  	updatebar(m);
  
  	wl_list_insert(&mons, &m->link);
+@@ -1580,7 +1591,7 @@ drawbar(Monitor *m)
+ 
+ 	if (!m->scene_buffer->node.enabled)
+ 		return;
+-	if (!(buf = bufmon(m)))
++	if (!(buf = bufmon(m, m->pool)))
+ 		return;
+ 
+ 	/* draw status first so it can be overdrawn by tags later */
 @@ -1633,13 +1644,52 @@ drawbar(Monitor *m)
  	wlr_buffer_unlock(&buf->base);
  }
