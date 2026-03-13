@@ -1,5 +1,5 @@
 diff --git a/dwl.c b/dwl.c
-index 7fe9468..4e3272e 100644
+index 7fe9468..2614a25 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -205,6 +205,7 @@ struct Monitor {
@@ -95,7 +95,7 @@ index 7fe9468..4e3272e 100644
  		return;
  
  	/* draw status first so it can be overdrawn by tags later */
-@@ -1633,13 +1644,52 @@ drawbar(Monitor *m)
+@@ -1633,13 +1644,47 @@ drawbar(Monitor *m)
  	wlr_buffer_unlock(&buf->base);
  }
  
@@ -112,11 +112,6 @@ index 7fe9468..4e3272e 100644
 +	/* Inline bufmon logic for the extra pool to keep changes contained */
 +	if (!(buf = bufmon(m, m->extra_pool)))
 +        return;
-+
-+	buf->busy = true;
-+	LISTEN(&buf->base.events.release, &buf->release, bufrelease);
-+	wlr_buffer_lock(&buf->base);
-+	drwl_setimage(m->drw, buf->image);
 +
 +	drwl_setscheme(m->drw, colors[SchemeNorm]);
 +	drwl_rect(m->drw, 0, 0, m->b.width, m->b.height, 1, 1);
@@ -149,7 +144,7 @@ index 7fe9468..4e3272e 100644
  }
  
  void
-@@ -2896,7 +2946,7 @@ startdrag(struct wl_listener *listener, void *data)
+@@ -2896,7 +2941,7 @@ startdrag(struct wl_listener *listener, void *data)
  int
  statusin(int fd, unsigned int mask, void *data)
  {
@@ -158,7 +153,7 @@ index 7fe9468..4e3272e 100644
  	ssize_t n;
  
  	if (mask & WL_EVENT_ERROR)
-@@ -2911,7 +2961,18 @@ statusin(int fd, unsigned int mask, void *data)
+@@ -2911,7 +2956,18 @@ statusin(int fd, unsigned int mask, void *data)
  	status[n] = '\0';
  	status[strcspn(status, "\n")] = '\0';
  
@@ -178,7 +173,7 @@ index 7fe9468..4e3272e 100644
  	drawbars();
  
  	return 0;
-@@ -3206,6 +3267,12 @@ updatebar(Monitor *m)
+@@ -3206,6 +3262,12 @@ updatebar(Monitor *m)
  			m->pool[i] = NULL;
  		}
  
