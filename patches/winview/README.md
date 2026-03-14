@@ -26,7 +26,8 @@ This patch is inspired from <https://dwm.suckless.org/patches/winview/>. Citing 
 > An example of how to insert this line can be found in the default config file template, config.def.h.
 
 ### Download
-- [2024-09-18](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/winview/winview.patch)
+- [2026-03-14 dwl 0.8](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/winview/winview_dwl_08.patch)
+- [2024-09-18](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/winview/winview_dwl_07.patch)
 - [2024-06-06](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/winview/winview-20240606.patch)
 - [git branch](https://codeberg.org/dhruva_sambrani/dwl/src/branch/winview)
 
