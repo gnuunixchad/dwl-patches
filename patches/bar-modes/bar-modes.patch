@@ -1,4 +1,4 @@
-From 4f2c8a99720d90a551bf38f2c8d25ad239346eef Mon Sep 17 00:00:00 2001
+From 04b37902e0098fb69250fd25b5afbc610a284529 Mon Sep 17 00:00:00 2001
 From: nate zhou <gnuunixchad@outlook.com>
 Date: Mon, 2 Mar 2026 21:54:03 +0800
 Subject: [PATCH] Patch: bar-modes for 0.8
@@ -6,19 +6,22 @@ Subject: [PATCH] Patch: bar-modes for 0.8
 Add modes_labels indicator to bar, which behaves like river-classic's
 dam bar. This patch has to be applied after the bar and modes patch.
 ---
- dwl.c | 70 +++++++++++++++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 59 insertions(+), 11 deletions(-)
+ dwl.c | 87 ++++++++++++++++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 72 insertions(+), 15 deletions(-)
 
 diff --git a/dwl.c b/dwl.c
-index ae290ad..df525d3 100644
+index ae290ad..7229034 100644
 --- a/dwl.c
 +++ b/dwl.c
-@@ -1585,19 +1585,26 @@ drawbar(Monitor *m)
+@@ -1585,19 +1585,29 @@ drawbar(Monitor *m)
  	uint32_t i, occ = 0, urg = 0;
  	Client *c;
  	Buffer *buf;
 +	char mode_text[256] = "";
 +	int mode_width = 0;
++	int title_width;
++	int remaining;
++	int status_shown = 0;
  
  	if (!m->scene_buffer->node.enabled)
  		return;
@@ -45,7 +48,7 @@ index ae290ad..df525d3 100644
  	wl_list_for_each(c, &clients, link) {
  		if (c->mon != m)
  			continue;
-@@ -1607,6 +1614,8 @@ drawbar(Monitor *m)
+@@ -1607,6 +1617,8 @@ drawbar(Monitor *m)
  	}
  	x = 0;
  	c = focustop(m);
@@ -54,7 +57,7 @@ index ae290ad..df525d3 100644
  	for (i = 0; i < LENGTH(tags); i++) {
  		w = TEXTW(m, tags[i]);
  		drwl_setscheme(m->drw, colors[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
-@@ -1617,19 +1626,57 @@ drawbar(Monitor *m)
+@@ -1617,19 +1629,63 @@ drawbar(Monitor *m)
  				urg & 1 << i);
  		x += w;
  	}
@@ -70,30 +73,40 @@ index ae290ad..df525d3 100644
  	w = TEXTW(m, m->ltsymbol);
  	drwl_setscheme(m->drw, colors[SchemeNorm]);
 -	x = drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, m->ltsymbol, 0);
+-
+-	if ((w = m->b.width - tw - x) > m->b.height) {
+-		if (c) {
+-			drwl_setscheme(m->drw, colors[m == selmon ? SchemeSel : SchemeNorm]);
+-			drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, client_get_title(c), 0);
+-			if (c && c->isfloating)
+-				drwl_rect(m->drw, x + boxs, boxs, boxw, boxw, 0, 0);
+-		} else {
 +	drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, m->ltsymbol, 0);
 +	x += w;
 +
-+	int remaining = m->b.width - x;
- 
--	if ((w = m->b.width - tw - x) > m->b.height) {
--		if (c) {
-+	if (mode_text[0]) {
-+		int title_width = remaining;
++	remaining = m->b.width - x;
 +
-+		if (title_width > m->b.height && c) {
- 			drwl_setscheme(m->drw, colors[m == selmon ? SchemeSel : SchemeNorm]);
--			drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, client_get_title(c), 0);
-+			drwl_text(m->drw, x, 0, title_width, m->b.height, m->lrpad / 2,
-+			         client_get_title(c), 0);
- 			if (c && c->isfloating)
- 				drwl_rect(m->drw, x + boxs, boxs, boxw, boxw, 0, 0);
--		} else {
-+		} else if (title_width > 0) {
-+			drwl_setscheme(m->drw, colors[SchemeNorm]);
-+			drwl_rect(m->drw, x, 0, title_width, m->b.height, 1, 1);
-+		}
-+		/* no status text when in a mode - completely omitted */
-+	} else {
++	if (mode_text[0] && remaining >= tw) {
++		drwl_setscheme(m->drw, colors[SchemeNorm]);
++		drwl_text(m->drw, m->b.width - tw, 0, tw, m->b.height, 0, stext, 0);
++		remaining -= tw;
++		status_shown = 1;
++	}
++
++	title_width = remaining;
++
++	if (c && title_width > m->b.height) {
++		drwl_setscheme(m->drw, colors[m == selmon ? SchemeSel : SchemeNorm]);
++		drwl_text(m->drw, x, 0, title_width, m->b.height, m->lrpad / 2,
++		         client_get_title(c), 0);
++		if (c && c->isfloating)
++			drwl_rect(m->drw, x + boxs, boxs, boxw, boxw, 0, 0);
++	} else if (title_width > 0) {
++		drwl_setscheme(m->drw, colors[SchemeNorm]);
++		drwl_rect(m->drw, x, 0, title_width, m->b.height, 1, 1);
++	}
++
++	if (!mode_text[0]) {
 +		/* not in a mode - normal behavior with status */
 +		if (remaining >= tw) {
 +			drwl_setscheme(m->drw, colors[SchemeNorm]);
@@ -118,7 +131,7 @@ index ae290ad..df525d3 100644
  		}
  	}
  
-@@ -3437,6 +3484,7 @@ entermode(const Arg *arg)
+@@ -3437,6 +3493,7 @@ entermode(const Arg *arg)
  {
  	active_mode_index = arg->i;
  	printstatus();
