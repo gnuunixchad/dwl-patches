@@ -23,8 +23,8 @@ any of these features, just disable it in `config.h`.
 
 ### Download
 
-- [git branch](https://codeberg.org/nikitaivanov/dwl/src/branch/kblayout)
-- [0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/kblayout/kblayout.patch)
+- [0.8](/dwl/dwl-patches/raw/branch/main/patches/kblayout/kblayout-0.8.patch)
+- [0.7](/dwl/dwl-patches/raw/branch/main/patches/kblayout/kblayout-0.7.patch)
 
 ### Authors
 
