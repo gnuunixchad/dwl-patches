@@ -38,7 +38,8 @@ with dmenu.
 
 ### Download
 
-- [v0.7](/dwl/dwl-patches/raw/branch/main/patches/setrule/setrule.patch)
+- [0.8](/dwl/dwl-patches/raw/branch/main/patches/setrule/setrule-0.8.patch)
+- [0.7](/dwl/dwl-patches/raw/branch/main/patches/setrule/setrule-0.7.patch)
 - [2025-02-14 v0.7](https://codeberg.org/dwl/dwl-patches/raw/commit/268bee3cee239e5bd52cceed88a52bfc21143cc3/patches/setrule/setrule.patch)
 
 ### Authors
