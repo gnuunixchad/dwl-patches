@@ -63,7 +63,8 @@ index 34397fc..f1b31ea 100644
 
 ### Download
 
-- [v0.7](/dwl/dwl-patches/raw/branch/main/patches/menurule/menurule.patch)
+- [0.8](/dwl/dwl-patches/raw/branch/main/patches/menurule/menurule-0.8.patch)
+- [0.7](/dwl/dwl-patches/raw/branch/main/patches/menurule/menurule-0.7.patch)
 
 ### Authors
 
