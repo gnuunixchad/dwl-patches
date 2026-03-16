@@ -2,8 +2,8 @@
 Always use the English keymap to get keycodes, so key bindings work even when using a non-English keyboard layout.
 
 ### Download
-- [git branch](https://codeberg.org/ForzCross/dwl/src/branch/en-keycodes.patch)
-- [v0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/en-keycodes/en-keycodes.patch)
+- [0.8](/dwl/dwl-patches/raw/branch/main/patches/en-keycodes/en-keycodes-0.8.patch)
+- [0.7](/dwl/dwl-patches/raw/branch/main/patches/en-keycodes/en-keycodes-0.7.patch)
 
 ### Authors
 - [Nikita Ivanov](https://codeberg.org/nikitaivanov) ([GitHub](https://github.com/NikitaIvanovV))
