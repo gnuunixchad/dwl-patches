@@ -22,7 +22,8 @@ scratch to make it more robust and add a few more features:
 
 #### swallow.patch
 
-- [v0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/swallow/swallow.patch)
+- [v0.8](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/swallow/swallow-0.8.patch)
+- [v0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/swallow/swallow-0.7.patch)
 - [2025-03-03 v0.7](https://codeberg.org/dwl/dwl-patches/raw/commit/2e5748edfe1129f95c7bb1bf9dd590a897f55f57/patches/swallow/swallow.patch) (added "dynamic swallowing" support)
 - [2024-07-13](https://codeberg.org/dwl/dwl-patches/raw/commit/f1ed83eaeba46108f4ee8164094cb431d64a3e68/patches/swallow/swallow.patch)
 - [2024-07-13](https://codeberg.org/dwl/dwl-patches/raw/commit/f64d701bab2f9f52d3637edd091684f920407d87/patches/swallow/swallow.patch)
