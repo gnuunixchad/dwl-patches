@@ -96,8 +96,10 @@ If mouse resizing feels sluggish, you can try compiling dwl with more aggressive
 
 ### Download
 - [git branch](https://codeberg.org/julmajustus/dwl/src/branch/btrtile-dev) 
-- [0.7](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/btrtile/btrtile-v0.7.patch)
-- [0.7 WITH gaps](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/btrtile/btrtile-v0.7-gaps.patch)
+- [0.8](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/btrtile/btrtile-v0.8.patch)
+- [0.8 WITH gaps](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/btrtile/btrtile-v0.8-gaps.patch)
+- [wlroots-next](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/btrtile/btrtile-wlroots-next-d41ecb7.patch)
+- [wlroots-next WITH gaps](https://codeberg.org/dwl/dwl-patches/raw/branch/main/patches/btrtile/btrtile-wlroots-next-d41ecb7-gaps.patch)
 
 ### Authors
 - [julmajustus](https://codeberg.org/julmajustus)

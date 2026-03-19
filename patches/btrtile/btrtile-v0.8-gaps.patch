@@ -1,30 +1,32 @@
-From b9789420f166c20579f29ecd171a8956c681848d Mon Sep 17 00:00:00 2001
+From f5d7fe287bd4405879a92d649243d3f646652617 Mon Sep 17 00:00:00 2001
 From: julmajustus <julmajustus@tutanota.com>
-Date: Thu, 13 Feb 2025 23:23:40 +0200
-Subject: [PATCH] btrtile with multi-tag support
+Date: Thu, 19 Mar 2026 00:08:10 +0200
+Subject: [PATCH] Refactor btrtile-gaps to v0.8
 
 ---
- btrtile.c    | 563 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ btrtile.c    | 584 +++++++++++++++++++++++++++++++++++++++++++++++++++
  config.def.h |  12 ++
- dwl.c        | 152 +++++++++++---
- 3 files changed, 698 insertions(+), 29 deletions(-)
+ dwl.c        | 148 ++++++++++---
+ 3 files changed, 717 insertions(+), 27 deletions(-)
  create mode 100644 btrtile.c
 
 diff --git a/btrtile.c b/btrtile.c
 new file mode 100644
-index 0000000..03f4680
+index 0000000..afe3c8f
 --- /dev/null
 +++ b/btrtile.c
-@@ -0,0 +1,563 @@
+@@ -0,0 +1,584 @@
 +/* ************************************************************************** */
-+/*                                                                            */
-+/*                                                        :::      ::::::::   */
-+/*   btrtile.c                                          :+:      :+:    :+:   */
-+/*                                                    +:+ +:+         +:+     */
-+/*   By: jmakkone <jmakkone@student.hive.fi>        +#+  +:+       +#+        */
-+/*                                                +#+#+#+#+#+   +#+           */
-+/*   Created: 2024/12/15 00:26:07 by jmakkone          #+#    #+#             */
-+/*   Updated: 2025/02/13 23:22:33 by jmakkone         ###   ########.fr       */
++/*                                                 @@@            @@@@@@@@    */
++/*                                                  @@@          @@@@@@@@@@   */
++/*                                                   @@!         @@!   @@@@   */
++/*                                                    !@!        !@!  @!@!@   */
++/*   btrtile.c                                         @!!       @!@ @! !@!   */
++/*                                                      !!!      !@!!!  !!!   */
++/*   By: julmajustus <julmajustus@tutanota.com>          !!:     !!:!   !!!   */
++/*                                                        ::!    :!:    !:!   */
++/*   Created: 2024/12/15 00:26:07 by julmajustus           ::    ::::::: ::   */
++/*   Updated: 2026/03/19 00:07:19 by julmajustus            : :   : : :  :    */
 +/*                                                                            */
 +/* ************************************************************************** */
 +
@@ -68,11 +70,18 @@ index 0000000..03f4680
 +{
 +	Client *c;
 +	float ratio;
-+	unsigned int left_count, right_count, mid;
++	unsigned int left_count, right_count, mid, e = m->gaps;
 +	struct wlr_box left_area, right_area;
 +
 +	if (!node)
 +		return;
++
++    if (is_root && e) {
++		area.x += gappx;
++		area.y += gappx;
++		area.width -= 2 * gappx;
++		area.height -= 2 * gappx;
++	}
 +
 +	/* If this node is a client node, check if it is visible. */
 +	if (node->is_client_node) {
@@ -119,6 +128,12 @@ index 0000000..03f4680
 +		right_area.y      = area.y;
 +		right_area.width  = area.width  - mid;
 +		right_area.height = area.height;
++
++        if (e) {
++			left_area.width -= gappx / 2;
++			right_area.x += gappx / 2;
++			right_area.width -= gappx / 2;
++		}
 +	} else {
 +		/* horizontal split */
 +		mid = (unsigned int)(area.height * ratio);
@@ -131,6 +146,12 @@ index 0000000..03f4680
 +		right_area.y     = area.y + mid;
 +		right_area.width = area.width;
 +		right_area.height= area.height - mid;
++
++        if (e) {
++			left_area.height -= gappx / 2;
++			right_area.y += gappx / 2;
++			right_area.height -= gappx / 2;
++		}
 +	}
 +
 +	apply_layout(m, node->left,  left_area,  0);
@@ -580,21 +601,21 @@ index 0000000..03f4680
 +	return closest;
 +}
 diff --git a/config.def.h b/config.def.h
-index 22d2171..92f3ad6 100644
+index 8a6eda0..bc04e3f 100644
 --- a/config.def.h
 +++ b/config.def.h
 @@ -13,7 +13,10 @@ static const float focuscolor[]            = COLOR(0x005577ff);
  static const float urgentcolor[]           = COLOR(0xff0000ff);
  /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
- static const float fullscreen_bg[]         = {0.1f, 0.1f, 0.1f, 1.0f}; /* You can also use glsl colors */
-+static const float resize_factor           = 0.0002f; /* Resize multiplier for mouse resizing, depends on mouse sensitivity. */
+ static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */
++static const float resize_factor           = 0.0002f; /* Resize multiplier for mouse resizing, depends on mouse sensivity. */
 +static const uint32_t resize_interval_ms   = 16; /* Resize interval depends on framerate and screen refresh rate. */
  
 +enum Direction { DIR_LEFT, DIR_RIGHT, DIR_UP, DIR_DOWN };
  /* tagging - TAGCOUNT must be no greater than 31 */
  #define TAGCOUNT (9)
  
-@@ -31,6 +34,7 @@ static const Rule rules[] = {
+@@ -30,6 +33,7 @@ static const Rule rules[] = {
  /* layout(s) */
  static const Layout layouts[] = {
  	/* symbol     arrange function */
@@ -602,23 +623,23 @@ index 22d2171..92f3ad6 100644
  	{ "[]=",      tile },
  	{ "><>",      NULL },    /* no layout function means floating behavior */
  	{ "[M]",      monocle },
-@@ -148,6 +152,14 @@ static const Key keys[] = {
- 	{ MODKEY,                    XKB_KEY_period,     focusmon,       {.i = WLR_DIRECTION_RIGHT} },
- 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_less,       tagmon,         {.i = WLR_DIRECTION_LEFT} },
- 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_greater,    tagmon,         {.i = WLR_DIRECTION_RIGHT} },
-+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Up,         swapclients,    {.i = DIR_UP} },
-+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Down,       swapclients,    {.i = DIR_DOWN} },
-+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Right,      swapclients,    {.i = DIR_RIGHT} },
-+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Left,       swapclients,    {.i = DIR_LEFT} },
-+	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Right,      setratio_h,     {.f = +0.025f} },
-+	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Left,       setratio_h,     {.f = -0.025f} },
-+	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Up,         setratio_v,     {.f = -0.025f} },
-+	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Down,       setratio_v,     {.f = +0.025f} },
- 	TAGKEYS(          XKB_KEY_1, XKB_KEY_exclam,                     0),
- 	TAGKEYS(          XKB_KEY_2, XKB_KEY_at,                         1),
- 	TAGKEYS(          XKB_KEY_3, XKB_KEY_numbersign,                 2),
+@@ -144,6 +148,14 @@ static const Key keys[] = {
+ 	{ MODKEY,                    XKB_KEY_period,      focusmon,         {.i = WLR_DIRECTION_RIGHT} },
+ 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_less,        tagmon,           {.i = WLR_DIRECTION_LEFT} },
+ 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_greater,     tagmon,           {.i = WLR_DIRECTION_RIGHT} },
++	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Up,         swapclients,       {.i = DIR_UP} },
++	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Down,       swapclients,       {.i = DIR_DOWN} },
++	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Right,      swapclients,       {.i = DIR_RIGHT} },
++	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Left,       swapclients,       {.i = DIR_LEFT} },
++	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Right,      setratio_h,        {.f = +0.025f} },
++	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Left,       setratio_h,        {.f = -0.025f} },
++	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Up,         setratio_v,        {.f = -0.025f} },
++	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Down,       setratio_v,        {.f = +0.025f} },
+ 	TAGKEYS(          XKB_KEY_1, XKB_KEY_exclam,                        0),
+ 	TAGKEYS(          XKB_KEY_2, XKB_KEY_at,                            1),
+ 	TAGKEYS(          XKB_KEY_3, XKB_KEY_numbersign,                    2),
 diff --git a/dwl.c b/dwl.c
-index a2711f6..e49a061 100644
+index 44f3ad9..f74d9a1 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -1,6 +1,7 @@
@@ -629,15 +650,15 @@ index a2711f6..e49a061 100644
  #include <getopt.h>
  #include <libinput.h>
  #include <linux/input-event-codes.h>
-@@ -103,6 +104,7 @@ typedef struct {
+@@ -100,6 +101,7 @@ typedef struct {
  	const Arg arg;
  } Button;
  
 +typedef struct LayoutNode LayoutNode;
  typedef struct Monitor Monitor;
  typedef struct {
- 	/* Must keep these three elements in this order */
-@@ -139,8 +141,9 @@ typedef struct {
+ 	/* Must keep this field first */
+@@ -137,8 +139,9 @@ typedef struct {
  #endif
  	unsigned int bw;
  	uint32_t tags;
@@ -648,7 +669,7 @@ index a2711f6..e49a061 100644
  } Client;
  
  typedef struct {
-@@ -208,6 +211,7 @@ struct Monitor {
+@@ -205,6 +208,7 @@ struct Monitor {
  	int nmaster;
  	char ltsymbol[16];
  	int asleep;
@@ -656,7 +677,7 @@ index a2711f6..e49a061 100644
  };
  
  typedef struct {
-@@ -250,6 +254,7 @@ static void arrangelayer(Monitor *m, struct wl_list *list,
+@@ -247,6 +251,7 @@ static void arrangelayer(Monitor *m, struct wl_list *list,
  		struct wlr_box *usable_area, int exclusive);
  static void arrangelayers(Monitor *m);
  static void axisnotify(struct wl_listener *listener, void *data);
@@ -664,7 +685,7 @@ index a2711f6..e49a061 100644
  static void buttonpress(struct wl_listener *listener, void *data);
  static void chvt(const Arg *arg);
  static void checkidleinhibitor(struct wlr_surface *exclude);
-@@ -333,6 +338,9 @@ static void setmon(Client *c, Monitor *m, uint32_t newtags);
+@@ -329,6 +334,9 @@ static void setmon(Client *c, Monitor *m, uint32_t newtags);
  static void setpsel(struct wl_listener *listener, void *data);
  static void setsel(struct wl_listener *listener, void *data);
  static void setup(void);
@@ -674,7 +695,7 @@ index a2711f6..e49a061 100644
  static void spawn(const Arg *arg);
  static void startdrag(struct wl_listener *listener, void *data);
  static void tag(const Arg *arg);
-@@ -431,6 +439,7 @@ static xcb_atom_t netatom[NetLast];
+@@ -454,6 +462,7 @@ static struct wlr_xwayland *xwayland;
  
  /* attempt to encapsulate suck into one file */
  #include "client.h"
@@ -682,7 +703,7 @@ index a2711f6..e49a061 100644
  
  /* function implementations */
  void
-@@ -601,7 +610,7 @@ buttonpress(struct wl_listener *listener, void *data)
+@@ -624,7 +633,7 @@ buttonpress(struct wl_listener *listener, void *data)
  	struct wlr_pointer_button_event *event = data;
  	struct wlr_keyboard *keyboard;
  	uint32_t mods;
@@ -691,7 +712,7 @@ index a2711f6..e49a061 100644
  	const Button *b;
  
  	wlr_idle_notifier_v1_notify_activity(idle_notifier, seat);
-@@ -622,7 +631,7 @@ buttonpress(struct wl_listener *listener, void *data)
+@@ -645,7 +654,7 @@ buttonpress(struct wl_listener *listener, void *data)
  		mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
  		for (b = buttons; b < END(buttons); b++) {
  			if (CLEANMASK(mods) == CLEANMASK(b->mod) &&
@@ -700,9 +721,9 @@ index a2711f6..e49a061 100644
  				b->func(&b->arg);
  				return;
  			}
-@@ -632,15 +641,36 @@ buttonpress(struct wl_listener *listener, void *data)
+@@ -655,6 +664,27 @@ buttonpress(struct wl_listener *listener, void *data)
  		/* If you released any buttons, we exit interactive move/resize mode. */
- 		/* TODO should reset to the pointer focus's current setcursor */
+ 		/* TODO: should reset to the pointer focus's current setcursor */
  		if (!locked && cursor_mode != CurNormal && cursor_mode != CurPressed) {
 +			c = grabc;
 +			if (c && c->was_tiled && !strcmp(selmon->ltsymbol, "|w|")) {
@@ -728,18 +749,7 @@ index a2711f6..e49a061 100644
  			wlr_cursor_set_xcursor(cursor, cursor_mgr, "default");
  			cursor_mode = CurNormal;
  			/* Drop the window off on its new monitor */
- 			selmon = xytomon(cursor->x, cursor->y);
- 			setmon(grabc, selmon, 0);
-+			grabc = NULL;
- 			return;
--		} else {
--			cursor_mode = CurNormal;
- 		}
-+		cursor_mode = CurNormal;
- 		break;
- 	}
- 	/* If the event wasn't handled by the compositor, notify the client with
-@@ -720,6 +750,7 @@ cleanupmon(struct wl_listener *listener, void *data)
+@@ -746,6 +776,7 @@ cleanupmon(struct wl_listener *listener, void *data)
  	wlr_output_layout_remove(output_layout, m->wlr_output);
  	wlr_scene_output_destroy(m->scene_output);
  
@@ -747,7 +757,7 @@ index a2711f6..e49a061 100644
  	closemon(m);
  	wlr_scene_node_destroy(&m->fullscreen_bg->node);
  	free(m);
-@@ -1024,6 +1055,7 @@ createmon(struct wl_listener *listener, void *data)
+@@ -1090,6 +1121,7 @@ createmon(struct wl_listener *listener, void *data)
  
  	wl_list_insert(&mons, &m->link);
  	printstatus();
@@ -755,7 +765,7 @@ index a2711f6..e49a061 100644
  
  	/* The xdg-protocol specifies:
  	 *
-@@ -1263,6 +1295,10 @@ destroynotify(struct wl_listener *listener, void *data)
+@@ -1332,6 +1364,10 @@ destroynotify(struct wl_listener *listener, void *data)
  	wl_list_remove(&c->destroy.link);
  	wl_list_remove(&c->set_title.link);
  	wl_list_remove(&c->fullscreen.link);
@@ -766,7 +776,7 @@ index a2711f6..e49a061 100644
  #ifdef XWAYLAND
  	if (c->type != XDGShell) {
  		wl_list_remove(&c->activate.link);
-@@ -1809,7 +1845,8 @@ void
+@@ -1862,7 +1898,8 @@ void
  motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double dy,
  		double dx_unaccel, double dy_unaccel)
  {
@@ -776,7 +786,7 @@ index a2711f6..e49a061 100644
  	Client *c = NULL, *w = NULL;
  	LayerSurface *l = NULL;
  	struct wlr_surface *surface = NULL;
-@@ -1863,18 +1900,56 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
+@@ -1916,18 +1953,56 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
  	/* Update drag icon's position */
  	wlr_scene_node_set_position(&drag_icon->node, (int)round(cursor->x), (int)round(cursor->y));
  
@@ -840,7 +850,7 @@ index a2711f6..e49a061 100644
  	/* If there's no client surface under the cursor, set the cursor image to a
  	 * default. This is what makes the cursor image appear when you move it
  	 * off of a client or over its border. */
-@@ -1908,22 +1983,41 @@ moveresize(const Arg *arg)
+@@ -1961,22 +2036,41 @@ moveresize(const Arg *arg)
  	if (!grabc || client_is_unmanaged(grabc) || grabc->isfullscreen)
  		return;
  
@@ -850,7 +860,7 @@ index a2711f6..e49a061 100644
 -	case CurMove:
 -		grabcx = (int)round(cursor->x) - grabc->geom.x;
 -		grabcy = (int)round(cursor->y) - grabc->geom.y;
--		wlr_cursor_set_xcursor(cursor, cursor_mgr, "fleur");
+-		wlr_cursor_set_xcursor(cursor, cursor_mgr, "all-scroll");
 -		break;
 -	case CurResize:
 -		/* Doesn't work for X11 output - the next absolute motion event
@@ -899,5 +909,5 @@ index a2711f6..e49a061 100644
  }
  
 -- 
-2.45.3
+2.52.0
 
